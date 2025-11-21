@@ -5,7 +5,7 @@ import { SyncEvent } from '../types';
  * THE SOCIAL SPINE ARCHITECTURE
  * ==============================
  * 
- * This service implements the "Nervous System" of the SyncShop protocol.
+ * This service implements the "Nervous System" of the Shop with Friends protocol.
  * It abstracts away the complexity of real-time communication, allowing
  * the UI components to simply "emit" reflexes and "subscribe" to impulses.
  * 

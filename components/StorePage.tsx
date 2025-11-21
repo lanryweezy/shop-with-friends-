@@ -105,7 +105,7 @@ const StorePage: React.FC<StorePageProps> = ({
         <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-bold rounded-lg cursor-pointer">
           S
         </div>
-        <h1 className="font-bold text-lg tracking-tight cursor-pointer text-gray-900">ShopFlow</h1>
+        <h1 className="font-bold text-lg tracking-tight cursor-pointer text-gray-900">Shop with Friends</h1>
       </div>
       <div className="flex items-center gap-2">
         <button 

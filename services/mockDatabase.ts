@@ -14,12 +14,12 @@ import { Product, Order, UserProfile } from '../types';
  * In a production app, these methods would be `fetch('/api/orders')` calls.
  */
 
-const DB_KEY = 'syncshop_db_v1';
+const DB_KEY = 'shopwithfriends_db_v1';
 
 const DEFAULT_USER: UserProfile = {
   id: 'u1',
   name: 'Demo User',
-  email: 'user@syncshop.io',
+  email: 'user@shopwithfriends.io',
   orders: []
 };
 

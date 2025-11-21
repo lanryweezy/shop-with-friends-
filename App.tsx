@@ -329,20 +329,21 @@ const DemoEnvironment = () => {
       <style>{`
         @keyframes float-up {
           0% { 
-            transform: translate(-50%, 0) scale(0.2) rotate(0deg); 
+            transform: translate(-50%, 20px) scale(0.5) rotate(0deg); 
             opacity: 0; 
           }
-          10% { 
+          15% { 
             opacity: 1;
-            transform: translate(-50%, -20px) scale(1);
+            transform: translate(-50%, -60px) scale(1.3) rotate(calc(var(--rotate) * 0.5));
           }
           100% { 
-            transform: translate(calc(-50% + var(--spread-x)), -300px) scale(1.2) rotate(var(--rotate)); 
+            transform: translate(calc(-50% + var(--spread-x)), -600px) scale(0.8) rotate(var(--rotate)); 
             opacity: 0; 
           }
         }
         .animate-float-up {
-          animation: float-up 2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+          animation: float-up 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+          will-change: transform, opacity;
         }
       `}</style>
     </div>
@@ -359,6 +360,13 @@ const App = () => {
     }
   };
 
+  const scrollToManifesto = () => {
+    const element = document.getElementById('manifesto');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white selection:bg-purple-500/30">
       {/* Navbar */}
@@ -366,9 +374,14 @@ const App = () => {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600"></div>
-            SyncShop
+            Shop with Friends
           </div>
-          <button className="text-sm text-gray-400 hover:text-white transition-colors">Documentation</button>
+          <button 
+            onClick={() => alert('API Documentation coming soon for public preview.')}
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            Documentation
+          </button>
         </div>
       </nav>
 
@@ -391,7 +404,10 @@ const App = () => {
           >
             Experience Live Demo <ArrowDown size={18} className="group-hover:translate-y-1 transition-transform"/>
           </button>
-          <button className="px-8 py-4 rounded-full font-medium text-white hover:bg-white/5 transition-all border border-white/10">
+          <button 
+            onClick={scrollToManifesto}
+            className="px-8 py-4 rounded-full font-medium text-white hover:bg-white/5 transition-all border border-white/10"
+          >
             Read the Manifesto
           </button>
         </div>
@@ -408,13 +424,13 @@ const App = () => {
       </section>
 
       {/* The Architecture (Anatomy) */}
-      <section className="py-24 bg-white/5 border-y border-white/5">
+      <section id="manifesto" className="py-24 bg-white/5 border-y border-white/5">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-3xl font-bold mb-6">It’s not an app.<br/>It’s an organ.</h2>
               <p className="text-gray-400 text-lg leading-relaxed mb-8">
-                SyncShop doesn't take over your platform. It attaches to it like a social spine. It provides the connective tissue that ties two human brains together while they browse your store.
+                Shop with Friends doesn't take over your platform. It attaches to it like a social spine. It provides the connective tissue that ties two human brains together while they browse your store.
               </p>
               
               <div className="space-y-6">
@@ -465,7 +481,7 @@ const App = () => {
                   <div className="h-4"></div>
                   <p className="text-gray-500">&lt;!-- Or just drop this in --&gt;</p>
                   <p>
-                    <span className="text-blue-400">&lt;script</span> <span className="text-purple-400">src</span>=<span className="text-green-400">"https://api.syncshop.io/spine.js"</span><span className="text-blue-400">&gt;&lt;/script&gt;</span>
+                    <span className="text-blue-400">&lt;script</span> <span className="text-purple-400">src</span>=<span className="text-green-400">"https://api.shopwithfriends.io/spine.js"</span><span className="text-blue-400">&gt;&lt;/script&gt;</span>
                   </p>
                 </div>
               </div>

@@ -47,6 +47,7 @@ const CoShopWidget: React.FC<CoShopWidgetProps> = ({
   onCopyLink,
   onReaction,
   peerName,
+  localName,
   isOtherUserOnProduct
 }) => {
   const [isMuted, setIsMuted] = useState(false);
@@ -127,7 +128,7 @@ const CoShopWidget: React.FC<CoShopWidgetProps> = ({
                     <Sparkles size={14} />
                   </div>
                   <code className="text-sm text-gray-300 font-mono truncate">
-                    sync.shop/j/{MOCK_SESSION_ID}
+                    shopwithfriends.io/j/{MOCK_SESSION_ID}
                   </code>
                </div>
                <div className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${hasCopied ? 'bg-green-500 text-white' : 'bg-white text-black'}`}>
