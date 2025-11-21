@@ -1,0 +1,8 @@
+{
+  "name": "SyncShop - Social Commerce Layer",
+  "description": "A lightweight, drop-in social shopping protocol that enables real-time shared browsing, video calls, and synchronized interactions between users.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
