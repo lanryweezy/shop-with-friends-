@@ -43,6 +43,7 @@ const DemoEnvironment = () => {
   const [isInvitingA, setIsInvitingA] = useState(false);
   const [reactionsA, setReactionsA] = useState<{id: number, type: ReactionType, spreadX: number, rotate: number}[]>([]);
   const [scrollForA, setScrollForA] = useState<number | undefined>(undefined);
+  const [cartA, setCartA] = useState<Product[]>([]);
 
   // --- STATE FOR DEVICE B (User B: Chidi) ---
   const [viewB, setViewB] = useState<ViewState>(ViewState.LIST);
@@ -51,6 +52,7 @@ const DemoEnvironment = () => {
   const [isInvitingB, setIsInvitingB] = useState(false);
   const [reactionsB, setReactionsB] = useState<{id: number, type: ReactionType, spreadX: number, rotate: number}[]>([]);
   const [scrollForB, setScrollForB] = useState<number | undefined>(undefined);
+  const [cartB, setCartB] = useState<Product[]>([]);
 
   // --- SYNC LOGIC (The Nervous System) ---
   // This effect listens for signals from the other "device" and updates the local state.
@@ -70,6 +72,8 @@ const DemoEnvironment = () => {
            addReaction('B', event.payload.reaction);
         } else if (event.type === 'SCROLL_REQUEST') {
            setScrollForB(event.payload.scrollTop);
+        } else if (event.type === 'CART_UPDATE') {
+           setCartB(event.payload.cart);
         }
       }
 
@@ -77,17 +81,16 @@ const DemoEnvironment = () => {
       if (event.sourceId === 'user-b') {
         
         // CONNECTION HANDSHAKE:
-        // When B clicks their orb, they send 'JOINED'.
-        // This signal tells A that B has accepted the invite.
-        // A then stops "Inviting" and enters "Connected" mode.
         if (event.type === 'JOINED') {
            setIsConnectedA(true);
            setIsInvitingA(false);
+           
+           // Sync B's cart to A upon join (or vice versa), effectively merging or overwriting
+           // For this demo, we assume they start fresh or sync to whoever acted last.
+           // But in the join event, we can sync initial state if needed.
            return;
         }
 
-        // SECURITY/LOGIC GATE:
-        // Ensure we only process other events if the connection is fully established.
         if (!isConnectedA) return;
 
         if (event.type === 'NAVIGATE') {
@@ -97,6 +100,8 @@ const DemoEnvironment = () => {
            addReaction('A', event.payload.reaction);
         } else if (event.type === 'SCROLL_REQUEST') {
            setScrollForA(event.payload.scrollTop);
+        } else if (event.type === 'CART_UPDATE') {
+           setCartA(event.payload.cart);
         }
       }
     });
@@ -135,13 +140,35 @@ const DemoEnvironment = () => {
     }
   };
 
-  // Helper to show ephemeral reaction animations with random spread
+  // --- CART HANDLERS ---
+
+  const updateCartA = (newCart: Product[]) => {
+    setCartA(newCart);
+    if (isConnectedA) {
+       syncEngine.send({ type: 'CART_UPDATE', payload: { cart: newCart }, sourceId: 'user-a', timestamp: Date.now() });
+    }
+  }
+
+  const updateCartB = (newCart: Product[]) => {
+    setCartB(newCart);
+    if (isConnectedB) {
+       syncEngine.send({ type: 'CART_UPDATE', payload: { cart: newCart }, sourceId: 'user-b', timestamp: Date.now() });
+    }
+  }
+
+  const handleAddToCartA = (product: Product) => updateCartA([...cartA, product]);
+  const handleRemoveFromCartA = (index: number) => updateCartA(cartA.filter((_, i) => i !== index));
+  const handleClearCartA = () => updateCartA([]);
+
+  const handleAddToCartB = (product: Product) => updateCartB([...cartB, product]);
+  const handleRemoveFromCartB = (index: number) => updateCartB(cartB.filter((_, i) => i !== index));
+  const handleClearCartB = () => updateCartB([]);
+
+  // --- REACTIONS ---
+
   const addReaction = (targetUser: 'A' | 'B', type: ReactionType) => {
     const id = Date.now() + Math.random();
-    // Generate a random horizontal destination between -200px and 200px
-    // This creates a "fountain" effect where emojis burst outwards from the center.
     const spreadX = Math.floor(Math.random() * 400) - 200;
-    // Add some random rotation for organic feel
     const rotate = Math.floor(Math.random() * 90) - 45;
 
     if (targetUser === 'A') {
@@ -154,14 +181,14 @@ const DemoEnvironment = () => {
   };
 
   const handleReactionA = (type: ReactionType) => {
-    addReaction('A', type); // Show locally immediately (optimistic UI)
+    addReaction('A', type);
     if (isConnectedA) {
       syncEngine.send({ type: 'REACTION', payload: { reaction: type }, sourceId: 'user-a', timestamp: Date.now() });
     }
   };
 
   const handleReactionB = (type: ReactionType) => {
-    addReaction('B', type); // Show locally immediately (optimistic UI)
+    addReaction('B', type);
     if (isConnectedB) {
       syncEngine.send({ type: 'REACTION', payload: { reaction: type }, sourceId: 'user-b', timestamp: Date.now() });
     }
@@ -170,22 +197,17 @@ const DemoEnvironment = () => {
   // --- SESSION FLOW ---
 
   const startSessionA = () => {
-    // Step 1: User A starts session, shows "Extending" UI (Invite Card)
     setIsInvitingA(true);
     setIsConnectedA(false);
   };
 
   const joinSessionB = () => {
-    // Step 2: User B clicks their orb to join.
     setIsConnectedB(true);
-    
-    // DEMO SHORTCUT:
-    // In a real app, B would ask the server for the current state of Session '5g7X9'.
-    // Here, since we are in the same component closure, we just copy state from A.
     setViewB(viewA);
     setProductB(productA);
-
-    // Send 'JOINED' event to notify A that the connection is established.
+    // Also sync cart state if needed, here we just inherit A's cart for demo simplicity
+    setCartB(cartA);
+    
     syncEngine.send({ type: 'JOINED', payload: {}, sourceId: 'user-b', timestamp: Date.now() });
   };
 
@@ -211,6 +233,10 @@ const DemoEnvironment = () => {
                 onScroll={handleScrollA}
                 scrollTo={scrollForA}
                 userId="user-a"
+                cart={cartA}
+                onAddToCart={handleAddToCartA}
+                onRemoveFromCart={handleRemoveFromCartA}
+                onClearCart={handleClearCartA}
              />
              <CoShopWidget 
                 connected={isConnectedA}
@@ -261,6 +287,10 @@ const DemoEnvironment = () => {
                 onScroll={handleScrollB}
                 scrollTo={scrollForB}
                 userId="user-b"
+                cart={cartB}
+                onAddToCart={handleAddToCartB}
+                onRemoveFromCart={handleRemoveFromCartB}
+                onClearCart={handleClearCartB}
              />
              <CoShopWidget 
                 connected={isConnectedB}
@@ -372,7 +402,7 @@ const App = () => {
         <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:40px_40px] pointer-events-none"></div>
         <div className="relative z-10 pt-10 text-center px-4">
           <h2 className="text-2xl font-bold text-white mb-2">Interactive Playground</h2>
-          <p className="text-gray-400">Start a session on the left device. Join on the right.</p>
+          <p className="text-gray-400">Start a session on the left device. Join on the right. Try adding to cart!</p>
         </div>
         <DemoEnvironment />
       </section>

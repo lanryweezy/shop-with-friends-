@@ -31,10 +31,11 @@ export interface Product {
  * - REACTION: Peer triggered an emotive reaction (heart, fire, etc).
  * - SCROLL_REQUEST: Peer wants to sync scroll position (throttled).
  * - JOINED: Peer successfully connected to the session (Handshake).
+ * - CART_UPDATE: Peer added or removed an item from the shared cart.
  */
 export interface SyncEvent {
   /** The type of action performed by the user */
-  type: 'NAVIGATE' | 'REACTION' | 'SCROLL_REQUEST' | 'JOINED';
+  type: 'NAVIGATE' | 'REACTION' | 'SCROLL_REQUEST' | 'JOINED' | 'CART_UPDATE';
   /** The data associated with the action (e.g., product ID, scroll position) */
   payload: any;
   /** The ID of the user who initiated the action */
@@ -68,4 +69,25 @@ export interface UserSession {
 export enum ViewState {
   LIST = 'LIST',
   PRODUCT = 'PRODUCT',
+}
+
+/**
+ * Represents a completed order in the database.
+ */
+export interface Order {
+  id: string;
+  items: Product[];
+  total: number;
+  date: string;
+  status: 'processing' | 'shipped' | 'delivered';
+}
+
+/**
+ * Mock user profile data.
+ */
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  orders: Order[];
 }
