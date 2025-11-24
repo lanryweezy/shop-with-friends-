@@ -60,7 +60,10 @@ import { SyncEvent } from './types';
 interface ShopWithFriendsOptions {
     onSyncEvent?: (event: SyncEvent) => void;
     onSessionCreated?: (sessionId: string) => void;
+    onSessionJoined?: (sessionId: string) => void;
     onError?: (error: Error) => void;
+    onStreamAdded?: (stream: MediaStream) => void;
+    onStreamRemoved?: () => void;
 }
 
 export class ShopWithFriends {
@@ -69,10 +72,20 @@ export class ShopWithFriends {
     constructor(options: ShopWithFriendsOptions = {}) {
         this.options = options;
 
+        // Configure WebRTC callbacks
+        if (options.onStreamAdded) {
+            realSyncEngine['onStreamAdded'] = options.onStreamAdded;
+        }
+        if (options.onStreamRemoved) {
+            realSyncEngine['onStreamRemoved'] = options.onStreamRemoved;
+        }
+
         // Subscribe to sync events
         realSyncEngine.subscribe((event) => {
             if (event.type === 'SESSION_CREATED') {
                 this.options.onSessionCreated?.(event.payload.sessionId);
+            } else if (event.type === 'SESSION_JOINED') {
+                this.options.onSessionJoined?.(event.payload.sessionId);
             } else {
                 this.options.onSyncEvent?.(event);
             }
@@ -135,6 +148,34 @@ export class ShopWithFriends {
      */
     isConnected(): boolean {
         return realSyncEngine.isConnected();
+    }
+
+    /**
+     * Start a voice/video call
+     */
+    async startCall(): Promise<void> {
+        await realSyncEngine.startCall();
+    }
+
+    /**
+     * Join an existing voice/video call
+     */
+    async joinCall(): Promise<void> {
+        await realSyncEngine.joinCall();
+    }
+
+    /**
+     * Toggle audio
+     */
+    toggleAudio(enabled: boolean): void {
+        realSyncEngine.toggleAudio(enabled);
+    }
+
+    /**
+     * Toggle video
+     */
+    toggleVideo(enabled: boolean): void {
+        realSyncEngine.toggleVideo(enabled);
     }
 }
 

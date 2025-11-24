@@ -1,4 +1,4 @@
-import { SyncEvent } from '../types';
+import { SyncEvent, SignalPayload } from '../types';
 
 /**
  * REAL-TIME SYNC ENGINE
@@ -16,7 +16,21 @@ class RealSyncEngine {
     private reconnectAttempts: number = 0;
     private maxReconnectAttempts: number = 5;
 
-    constructor() {
+    // WebRTC
+    private peerConnection: RTCPeerConnection | null = null;
+    private localStream: MediaStream | null = null;
+    private remoteStream: MediaStream | null = null;
+    private onStreamAdded: ((stream: MediaStream) => void) | null = null;
+    private onStreamRemoved: (() => void) | null = null;
+
+    constructor(options?: {
+        onStreamAdded?: (stream: MediaStream) => void,
+        onStreamRemoved?: () => void
+    }) {
+        if (options) {
+            this.onStreamAdded = options.onStreamAdded || null;
+            this.onStreamRemoved = options.onStreamRemoved || null;
+        }
         // Auto-connect on instantiation if needed, or wait for explicit connect
         // For now, we'll connect immediately to be ready
         this.connect();
@@ -77,6 +91,10 @@ class RealSyncEngine {
 
             case 'SESSION_JOINED':
                 this.sessionId = data.payload.sessionId;
+                break;
+
+            case 'SIGNAL':
+                this.handleSignal(data.payload);
                 break;
 
             default:
@@ -218,8 +236,144 @@ class RealSyncEngine {
     /**
      * Check if connected to a session
      */
+    /**
+     * Check if connected to a session
+     */
     public isConnected(): boolean {
         return !!this.sessionId;
+    }
+
+    // ==========================================
+    // WebRTC Implementation
+    // ==========================================
+
+    public async startCall() {
+        console.log('Starting call...');
+        await this.setupLocalMedia();
+        this.createPeerConnection();
+
+        const offer = await this.peerConnection!.createOffer();
+        await this.peerConnection!.setLocalDescription(offer);
+
+        this.sendSignal({
+            type: 'offer',
+            sdp: offer
+        });
+    }
+
+    public async joinCall() {
+        console.log('Joining call...');
+        await this.setupLocalMedia();
+        // Peer connection will be created when offer is received
+    }
+
+    public toggleAudio(enabled: boolean) {
+        if (this.localStream) {
+            this.localStream.getAudioTracks().forEach(track => track.enabled = enabled);
+        }
+    }
+
+    public toggleVideo(enabled: boolean) {
+        if (this.localStream) {
+            this.localStream.getVideoTracks().forEach(track => track.enabled = enabled);
+        }
+    }
+
+    private async setupLocalMedia() {
+        try {
+            this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            if (this.onStreamAdded) {
+                // We can also show our own stream
+                // this.onStreamAdded(this.localStream); 
+            }
+        } catch (e) {
+            console.error('Error accessing media devices:', e);
+            throw e;
+        }
+    }
+
+    private createPeerConnection() {
+        if (this.peerConnection) return;
+
+        const config: RTCConfiguration = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' } // Public STUN server
+            ]
+        };
+
+        this.peerConnection = new RTCPeerConnection(config);
+
+        // Add local tracks to connection
+        if (this.localStream) {
+            this.localStream.getTracks().forEach(track => {
+                this.peerConnection!.addTrack(track, this.localStream!);
+            });
+        }
+
+        // Handle remote stream
+        this.peerConnection.ontrack = (event) => {
+            console.log('Received remote track');
+            this.remoteStream = event.streams[0];
+            if (this.onStreamAdded) {
+                this.onStreamAdded(this.remoteStream);
+            }
+        };
+
+        // Handle ICE candidates
+        this.peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                this.sendSignal({
+                    type: 'candidate',
+                    candidate: event.candidate.toJSON()
+                });
+            }
+        };
+
+        this.peerConnection.oniceconnectionstatechange = () => {
+            if (this.peerConnection?.iceConnectionState === 'disconnected') {
+                if (this.onStreamRemoved) this.onStreamRemoved();
+            }
+        };
+    }
+
+    private async handleSignal(payload: SignalPayload) {
+        if (!this.peerConnection) {
+            this.createPeerConnection();
+        }
+
+        const pc = this.peerConnection!;
+
+        try {
+            if (payload.type === 'offer' && payload.sdp) {
+                console.log('Received offer');
+                await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+
+                this.sendSignal({
+                    type: 'answer',
+                    sdp: answer,
+                    targetId: payload.sourceId // Reply only to sender
+                });
+            } else if (payload.type === 'answer' && payload.sdp) {
+                console.log('Received answer');
+                await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+            } else if (payload.type === 'candidate' && payload.candidate) {
+                console.log('Received candidate');
+                await pc.addIceCandidate(new RTCIceCandidate(payload.candidate));
+            }
+        } catch (e) {
+            console.error('Error handling signal:', e);
+        }
+    }
+
+    private sendSignal(payload: SignalPayload) {
+        if (!this.socket || this.socket.readyState !== WebSocket.OPEN) return;
+
+        this.socket.send(JSON.stringify({
+            type: 'SIGNAL',
+            payload
+        }));
     }
 }
 

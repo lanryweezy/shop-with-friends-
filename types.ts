@@ -35,7 +35,7 @@ export interface Product {
  */
 export interface SyncEvent {
   /** The type of action performed by the user */
-  type: 'NAVIGATE' | 'REACTION' | 'SCROLL_REQUEST' | 'JOINED' | 'CART_UPDATE' | 'SESSION_CREATED' | 'SESSION_JOINED' | 'CLIENT_ID';
+  type: 'NAVIGATE' | 'REACTION' | 'SCROLL_REQUEST' | 'JOINED' | 'CART_UPDATE' | 'SESSION_CREATED' | 'SESSION_JOINED' | 'CLIENT_ID' | 'SIGNAL';
   /** The data associated with the action (e.g., product ID, scroll position) */
   payload: any;
   /** The ID of the user who initiated the action */
@@ -90,4 +90,15 @@ export interface UserProfile {
   name: string;
   email: string;
   orders: Order[];
+}
+
+/**
+ * WebRTC Signaling payload
+ */
+export interface SignalPayload {
+  type: 'offer' | 'answer' | 'candidate';
+  sdp?: RTCSessionDescriptionInit;
+  candidate?: RTCIceCandidateInit;
+  targetId?: string;
+  sourceId?: string;
 }

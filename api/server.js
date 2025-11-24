@@ -46,6 +46,10 @@ wss.on('connection', (ws) => {
                     handleSyncEvent(ws, clientId, data);
                     break;
 
+                case 'SIGNAL':
+                    handleSignal(ws, clientId, data);
+                    break;
+
                 default:
                     ws.send(JSON.stringify({
                         type: 'ERROR',
@@ -157,6 +161,38 @@ function handleSyncEvent(ws, clientId, data) {
 
     // Broadcast to all other participants in the session
     broadcastToSession(sessionId, event, clientId);
+}
+
+// Handle WebRTC signaling
+function handleSignal(ws, clientId, data) {
+    const { sessionId } = ws;
+    if (!sessionId) return;
+
+    const payload = data.payload;
+    const targetId = payload.targetId;
+
+    // Add sourceId so the receiver knows who sent it
+    const signalMessage = {
+        type: 'SIGNAL',
+        payload: {
+            ...payload,
+            sourceId: clientId
+        }
+    };
+
+    if (targetId) {
+        // Direct message to specific client
+        const session = sessions.get(sessionId);
+        if (session) {
+            const targetWs = session.participants.get(targetId);
+            if (targetWs && targetWs.readyState === targetWs.OPEN) {
+                targetWs.send(JSON.stringify(signalMessage));
+            }
+        }
+    } else {
+        // Broadcast to all (except sender)
+        broadcastToSession(sessionId, signalMessage, clientId);
+    }
 }
 
 // Broadcast message to all participants in a session except sender
