@@ -1,0 +1,205 @@
+{%- comment -%}
+  Shop with Friends - Collaborative Shopping Widget
+  
+  Installation:
+  1. Add this snippet to your theme: Snippets > shop-with-friends.liquid
+  2. Include it in product.liquid: {% render 'shop-with-friends' %}
+  3. Configure your API key in theme settings
+{%- endcomment -%}
+
+{%- liquid
+  # Get API key from theme settings
+  assign swf_api_key = settings.swf_api_key
+  assign swf_enabled = settings.swf_enabled
+  
+  # Only load if enabled and API key exists
+  if swf_enabled and swf_api_key != blank
+-%}
+
+<!-- Shop with Friends SDK -->
+<script src="https://cdn.shopwithfriends.io/v1/swf.esm.js" type="module"></script>
+
+<script type="module">
+  import { ShopWithFriends } from 'https://cdn.shopwithfriends.io/v1/swf.esm.js';
+  
+  // Get product data
+  const productData = {
+    id: '{{ product.id }}',
+    name: {{ product.title | json }},
+    price: {{ product.price | money }},
+    url: {{ product.url | within: collection | json }},
+    image: {{ product.featured_image | image_url: width: 800 | json }},
+    {%- if product.variants.size > 1 -%}
+    variant: {
+      id: '{{ product.selected_or_first_available_variant.id }}',
+      name: {{ product.selected_or_first_available_variant.title | json }},
+      price: {{ product.selected_or_first_available_variant.price | money }}
+    }
+    {%- endif -%}
+  };
+
+  // Initialize SDK
+  const swf = new ShopWithFriends({
+    apiKey: '{{ swf_api_key }}',
+    apiUrl: 'wss://api.shopwithfriends.io',
+    
+    // UI Configuration
+    showInviteButton: {{ settings.swf_show_button | default: true }},
+    enableVoice: {{ settings.swf_enable_voice | default: true }}, // VOICE IS CORE!
+    theme: '{{ settings.swf_theme | default: "dark" }}',
+    position: '{{ settings.swf_position | default: "bottom-right" }}',
+    
+    // Product context
+    productId: productData.id,
+    productName: productData.name,
+    productUrl: productData.url,
+    
+    // Event callbacks
+    onSessionCreated: (session) => {
+      console.log('✅ Shopping session created:', session.sessionId);
+      
+      {%- if settings.swf_analytics_enabled -%}
+      // Track in Shopify analytics
+      if (window.Shopify && window.Shopify.analytics) {
+        window.Shopify.analytics.publish('swf_session_created', {
+          sessionId: session.sessionId,
+          productId: productData.id
+        });
+      }
+      {%- endif -%}
+    },
+    
+    onParticipantJoined: (user) => {
+      console.log('👋 Friend joined:', user.userName);
+      
+      // Sync current cart state to new participant
+      if (window.Shopify && window.Shopify.cart) {
+        fetch('/cart.js')
+          .then(res => res.json())
+          .then(cart => {
+            swf.syncCart(cart.items.map(item => ({
+              id: item.variant_id,
+              name: item.title,
+              quantity: item.quantity,
+              price: item.price
+            })));
+          });
+      }
+    },
+    
+    onSync: (event) => {
+      console.log('🔄 Sync event:', event.eventType);
+      
+      // Handle navigation sync
+      if (event.eventType === 'NAVIGATE' && event.url) {
+        // Show notification
+        if (confirm(`Your friend is looking at "${event.productName}". View it together?`)) {
+          window.location.href = event.url;
+        }
+      }
+      
+      // Handle cart sync
+      if (event.eventType === 'CART_UPDATE' && event.cart) {
+        console.log('Friend's cart:', event.cart);
+        // Optionally show a notification about cart changes
+      }
+      
+      // Handle reactions
+      if (event.eventType === 'REACTION') {
+        console.log('Friend reacted:', event.reaction);
+      }
+    },
+    
+    onError: (error) => {
+      console.error('Shop with Friends error:', error);
+    }
+  });
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      await swf.init();
+      console.log('✅ Shop with Friends initialized');
+      
+      // Auto-join from URL parameter
+      const params = new URLSearchParams(window.location.search);
+      const joinSessionId = params.get('swf_join');
+      if (joinSessionId) {
+        await swf.joinSession(joinSessionId);
+      }
+      
+    } catch (error) {
+      console.error('Failed to initialize Shop with Friends:', error);
+    }
+  });
+
+  // Listen for cart changes and sync
+  document.addEventListener('cart:updated', (event) => {
+    if (swf.isInSession()) {
+      swf.syncCart(event.detail.cart.items);
+    }
+  });
+
+  // Sync when variant changes
+  const variantSelectors = document.querySelectorAll('[name="id"]');
+  variantSelectors.forEach(selector => {
+    selector.addEventListener('change', (e) => {
+      if (swf.isInSession()) {
+        const variantId = e.target.value;
+        const variant = {{ product.variants | json }}.find(v => v.id == variantId);
+        
+        swf.syncNavigation({
+          url: window.location.href,
+          productId: productData.id,
+          productName: productData.name,
+          variant: {
+            id: variantId,
+            name: variant?.title
+          }
+        });
+      }
+    });
+  });
+
+  // Add reaction buttons (optional)
+  {%- if settings.swf_show_reaction_buttons -%}
+  const reactionButtons = document.createElement('div');
+  reactionButtons.className = 'swf-reaction-buttons';
+  reactionButtons.innerHTML = `
+    <style>
+      .swf-reaction-buttons {
+        display: flex;
+        gap: 8px;
+        margin: 16px 0;
+      }
+      .swf-reaction-btn {
+        padding: 8px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.2s;
+      }
+      .swf-reaction-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+    </style>
+    <button class="swf-reaction-btn" onclick="window.swf.sendReaction('heart')">❤️</button>
+    <button class="swf-reaction-btn" onclick="window.swf.sendReaction('fire')">🔥</button>
+    <button class="swf-reaction-btn" onclick="window.swf.sendReaction('laugh')">😂</button>
+    <button class="swf-reaction-btn" onclick="window.swf.sendReaction('shock')">😱</button>
+  `;
+  
+  const productForm = document.querySelector('.product-form');
+  if (productForm) {
+    productForm.appendChild(reactionButtons);
+  }
+  {%- endif -%}
+
+  // Expose SDK globally for debugging
+  window.swf = swf;
+</script>
+
+{%- endif -%}

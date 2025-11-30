@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop with Friends - Live Demo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .device-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .device-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .device-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .status-badge.online {
+            background: #10b981;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .device-screen {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 500px;
+            position: relative;
+        }
+
+        .store-content {
+            padding: 20px;
+            color: #1f2937;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            background: #f9fafb;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background: #e5e7eb;
+        }
+
+        .product-info {
+            padding: 12px;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .product-price {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .product-detail {
+            padding: 20px;
+        }
+
+        .product-detail-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #e5e7eb;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .reactions-container {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            width: 100%;
+            pointer-events: none;
+            height: 0;
+            overflow: visible;
+            z-index: 60;
+        }
+
+        .reaction {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            font-size: 2rem;
+            animation: float-up 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes float-up {
+            0% {
+                transform: translate(-50%, 20px) scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+
+            15% {
+                opacity: 1;
+                transform: translate(-50%, -60px) scale(1.3) rotate(calc(var(--rotate) * 0.5));
+            }
+
+            100% {
+                transform: translate(calc(-50% + var(--spread-x)), -400px) scale(0.8) rotate(var(--rotate));
+                opacity: 0;
+            }
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .instructions h2 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .note {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 3px solid #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛍️ Shop with Friends</h1>
+            <p>Real-time co-shopping with voice chat - Powered by WebSockets & WebRTC</p>
+        </div>
+
+        <div class="instructions">
+            <h2>🚀 How to Test</h2>
+            <ol>
+                <li><strong>Open this page in two browser windows</strong> (side by side or on different devices)</li>
+                <li><strong>Window 1:</strong> Click the "Shop Together" button to create a session</li>
+                <li><strong>Window 2:</strong> Copy the invite link and open it (or click "Shop Together" to join)</li>
+                <li><strong>Try it:</strong> Browse products, add to cart, send reactions, and start voice chat!</li>
+            </ol>
+            <div class="note">
+                <strong>✨ Features to Try:</strong> Real-time navigation sync, shared cart, emoji reactions, scroll
+                sync, and voice chat!
+            </div>
+        </div>
+
+        <div class="demo-grid">
+            <!-- Products will be rendered here -->
+            <div class="device-card">
+                <div class="device-header">
+                    <div class="device-name">Product Catalog</div>
+                </div>
+                <div class="device-screen">
+                    <div class="store-content" id="store-content">
+                        <h2 style="margin-bottom: 20px; color: #1f2937;">Featured Products</h2>
+                        <div class="product-grid" id="product-grid">
+                            <!-- Products will be dynamically added -->
+                        </div>
+                    </div>
+                    <div class="reactions-container" id="reactions"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include SDK -->
+    <script type="module">
+        import { ShopWithFriends } from './dist/swf.esm.js';
+
+        // Sample products
+        const products = [
+            { id: 1, name: 'Wireless Headphones', price: 99.99, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop' },
+            { id: 2, name: 'Smart Watch', price: 249.99, image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop' },
+            { id: 3, name: 'Running Shoes', price: 129.99, image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop' },
+            { id: 4, name: 'Backpack', price: 79.99, image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=300&h=300&fit=crop' },
+            { id: 5, name: 'Sunglasses', price: 149.99, image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=300&h=300&fit=crop' },
+            { id: 6, name: 'Coffee Maker', price: 89.99, image: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=300&h=300&fit=crop' }
+        ];
+
+        let cart = [];
+        let currentView = 'list';
+        let currentProduct = null;
+
+        // Initialize SDK
+        const sdk = new ShopWithFriends({
+            apiKey: 'demo-key',
+            apiUrl: 'ws://localhost:3001',
+            enableVoice: true,
+            showInviteButton: true,
+            onSessionCreated: (session) => {
+                console.log('✅ Session created:', session.sessionId);
+                showNotification('Session created! Share the invite link.');
+            },
+            onParticipantJoined: (user) => {
+                console.log('👋 Participant joined:', user.userName);
+                showNotification(`${user.userName || 'Someone'} joined!`);
+                // Sync current state to new participant
+                if (currentView === 'detail' && currentProduct) {
+                    sdk.syncNavigation({ productId: currentProduct.id, view: 'detail', product: currentProduct });
+                }
+                if (cart.length > 0) {
+                    sdk.syncCart(cart);
+                }
+            },
+            onParticipantLeft: (user) => {
+                console.log('👋 Participant left:', user.userId);
+                showNotification('Participant left the session');
+            },
+            onSync: (event) => {
+                console.log('🔄 Sync event:', event.eventType, event);
+                handleSyncEvent(event);
+            },
+            onError: (error) => {
+                console.error('❌ Error:', error);
+            }
+        });
+
+        // Listen for sync events
+        function handleSyncEvent(event) {
+            switch (event.eventType) {
+                case 'NAVIGATE':
+                    if (event.product) {
+                        showProductDetail(event.product);
+                    } else {
+                        showProductList();
+                    }
+                    break;
+                case 'CART_UPDATE':
+                    cart = event.cart || [];
+                    updateCartUI();
+                    break;
+                case 'REACTION':
+                    showReaction(event.reaction);
+                    break;
+            }
+        }
+
+        // Render products
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = products.map(product => `
+                <div class="product-card" onclick="viewProduct(${product.id})">
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                    <div class="product-info">
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">$${product.price}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.viewProduct = function (productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                showProductDetail(product);
+                sdk.syncNavigation({ productId: product.id, view: 'detail', product });
+            }
+        };
+
+        function showProductDetail(product) {
+            currentView = 'detail';
+            currentProduct = product;
+            const content = document.getElementById('store-content');
+            content.innerHTML = `
+                <button class="btn" onclick="backToList()" style="margin-bottom: 20px; background: #e5e7eb; color: #1f2937;">← Back</button>
+                <div class="product-detail">
+                    <img src="${product.image}" alt="${product.name}" class="product-detail-image">
+                    <h2 style="margin: 20px 0 10px; font-size: 1.8rem;">${product.name}</h2>
+                    <div class="product-price" style="font-size: 2rem; margin-bottom: 20px;">$${product.price}</div>
+                    <button class="btn btn-primary" onclick="addToCart(${product.id})">Add to Cart</button>
+                    <button class="btn" onclick="sendReaction('heart')" style="margin-left: 10px; background: #f87171; color: white;">❤️ Love it!</button>
+                    <button class="btn" onclick="sendReaction('fire')" style="margin-left: 10px; background: #fb923c; color: white;">🔥 Fire!</button>
+                </div>
+            `;
+        }
+
+        window.backToList = function () {
+            showProductList();
+            sdk.syncNavigation({ view: 'list' });
+        };
+
+        function showProductList() {
+            currentView = 'list';
+            currentProduct = null;
+            const content = document.getElementById('store-content');
+            content.innerHTML = `
+                <h2 style="margin-bottom: 20px; color: #1f2937;">Featured Products</h2>
+                <div class="product-grid" id="product-grid"></div>
+            `;
+            renderProducts();
+        }
+
+        window.addToCart = function (productId) {
+            const product = products.find(p => p.id === productId);
+            if (product && !cart.find(p => p.id === productId)) {
+                cart.push(product);
+                updateCartUI();
+                sdk.syncCart(cart);
+                showNotification(`${product.name} added to cart!`);
+            }
+        };
+
+        window.sendReaction = function (type) {
+            sdk.sendReaction(type);
+            showReaction(type);
+        };
+
+        function showReaction(type) {
+            const reactions = document.getElementById('reactions');
+            const emoji = type === 'heart' ? '❤️' : type === 'fire' ? '🔥' : '😂';
+            const reaction = document.createElement('div');
+            reaction.className = 'reaction';
+            reaction.textContent = emoji;
+            reaction.style.setProperty('--spread-x', `${(Math.random() - 0.5) * 100}px`);
+            reaction.style.setProperty('--rotate', `${(Math.random() - 0.5) * 60}deg`);
+            reactions.appendChild(reaction);
+            setTimeout(() => reaction.remove(), 2500);
+        }
+
+        function updateCartUI() {
+            const existing = document.querySelector('.cart-count');
+            if (existing) existing.remove();
+
+            if (cart.length > 0) {
+                const badge = document.createElement('div');
+                badge.className = 'cart-count';
+                badge.textContent = cart.length;
+                document.querySelector('.device-screen').appendChild(badge);
+            }
+        }
+
+        function showNotification(message) {
+            // Simple notification (you can enhance this)
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                color: #1f2937;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 1000;
+                font-weight: 600;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Initialize
+        (async () => {
+            try {
+                await sdk.init();
+                console.log('✅ SDK initialized');
+                renderProducts();
+            } catch (error) {
+                console.error('Failed to initialize SDK:', error);
+            }
+        })();
+    </script>
+</body>
+
+</html>

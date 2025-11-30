@@ -1,254 +1,188 @@
+import 'dotenv/config';
 import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
-import { v4 as uuidv4 } from 'uuid';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { nanoid } from 'nanoid';
+import cors from 'cors';
+import SessionManager from './sessionManager.js';
+import WebSocketHandler from './websocketHandler.js';
 
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-// In-memory storage for sessions (in production, use Redis or database)
-const sessions = new Map();
+// Initialize managers
+const sessionManager = new SessionManager();
+const wsHandler = new WebSocketHandler(sessionManager);
 
-// Handle WebSocket connections
-wss.on('connection', (ws) => {
-    console.log('New client connected');
+// Middleware
+app.use(express.json());
 
-    // Generate a unique client ID
-    const clientId = uuidv4();
+// CORS configuration
+const corsOrigins = process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'];
+app.use(cors({
+    origin: corsOrigins,
+    credentials: true
+}));
 
-    // Send client ID to the newly connected client
-    ws.send(JSON.stringify({
-        type: 'CLIENT_ID',
-        payload: { clientId }
-    }));
+// ===== REST API ENDPOINTS =====
 
-    // Handle incoming messages
-    ws.on('message', (message) => {
-        try {
-            const data = JSON.parse(message);
-
-            switch (data.type) {
-                case 'CREATE_SESSION':
-                    handleCreateSession(ws, clientId, data);
-                    break;
-
-                case 'JOIN_SESSION':
-                    handleJoinSession(ws, clientId, data);
-                    break;
-
-                case 'SYNC_EVENT':
-                    handleSyncEvent(ws, clientId, data);
-                    break;
-
-                case 'SIGNAL':
-                    handleSignal(ws, clientId, data);
-                    break;
-
-                default:
-                    ws.send(JSON.stringify({
-                        type: 'ERROR',
-                        payload: { message: 'Unknown message type' }
-                    }));
-            }
-        } catch (error) {
-            console.error('Error processing message:', error);
-            ws.send(JSON.stringify({
-                type: 'ERROR',
-                payload: { message: 'Invalid message format' }
-            }));
-        }
-    });
-
-    // Handle client disconnect
-    ws.on('close', () => {
-        handleClientDisconnect(clientId);
-    });
-});
-
-// Handle session creation
-function handleCreateSession(ws, clientId, data) {
-    const sessionId = uuidv4().substring(0, 5).toUpperCase(); // Short session ID like "5g7X9"
-
-    // Create new session
-    const session = {
-        id: sessionId,
-        host: clientId,
-        participants: new Map([[clientId, ws]]),
-        createdAt: Date.now()
-    };
-
-    sessions.set(sessionId, session);
-
-    // Store session info on the WebSocket for easy access
-    ws.sessionId = sessionId;
-    ws.clientId = clientId;
-
-    // Send session info back to creator
-    ws.send(JSON.stringify({
-        type: 'SESSION_CREATED',
-        payload: {
-            sessionId,
-            joinLink: `/join/${sessionId}`
-        }
-    }));
-
-    console.log(`Session ${sessionId} created by ${clientId}`);
-}
-
-// Handle joining a session
-function handleJoinSession(ws, clientId, data) {
-    const { sessionId } = data.payload;
-
-    const session = sessions.get(sessionId);
-    if (!session) {
-        ws.send(JSON.stringify({
-            type: 'ERROR',
-            payload: { message: 'Session not found' }
-        }));
-        return;
-    }
-
-    // Add participant to session
-    session.participants.set(clientId, ws);
-
-    // Store session info on the WebSocket
-    ws.sessionId = sessionId;
-    ws.clientId = clientId;
-
-    // Notify all participants about the new user
-    const joinEvent = {
-        type: 'JOINED',
-        payload: {},
-        sourceId: clientId,
-        timestamp: Date.now()
-    };
-
-    broadcastToSession(sessionId, joinEvent, clientId);
-
-    // Send success message to joiner
-    ws.send(JSON.stringify({
-        type: 'SESSION_JOINED',
-        payload: { sessionId }
-    }));
-
-    console.log(`Client ${clientId} joined session ${sessionId}`);
-}
-
-// Handle sync events
-function handleSyncEvent(ws, clientId, data) {
-    const { sessionId } = ws;
-
-    if (!sessionId) {
-        ws.send(JSON.stringify({
-            type: 'ERROR',
-            payload: { message: 'Not in a session' }
-        }));
-        return;
-    }
-
-    // Add source ID and timestamp to the event
-    const event = {
-        ...data.payload,
-        sourceId: clientId,
-        timestamp: Date.now()
-    };
-
-    // Broadcast to all other participants in the session
-    broadcastToSession(sessionId, event, clientId);
-}
-
-// Handle WebRTC signaling
-function handleSignal(ws, clientId, data) {
-    const { sessionId } = ws;
-    if (!sessionId) return;
-
-    const payload = data.payload;
-    const targetId = payload.targetId;
-
-    // Add sourceId so the receiver knows who sent it
-    const signalMessage = {
-        type: 'SIGNAL',
-        payload: {
-            ...payload,
-            sourceId: clientId
-        }
-    };
-
-    if (targetId) {
-        // Direct message to specific client
-        const session = sessions.get(sessionId);
-        if (session) {
-            const targetWs = session.participants.get(targetId);
-            if (targetWs && targetWs.readyState === targetWs.OPEN) {
-                targetWs.send(JSON.stringify(signalMessage));
-            }
-        }
-    } else {
-        // Broadcast to all (except sender)
-        broadcastToSession(sessionId, signalMessage, clientId);
-    }
-}
-
-// Broadcast message to all participants in a session except sender
-function broadcastToSession(sessionId, message, senderId) {
-    const session = sessions.get(sessionId);
-    if (!session) return;
-
-    const messageString = JSON.stringify(message);
-
-    for (const [clientId, ws] of session.participants) {
-        if (clientId !== senderId && ws.readyState === ws.OPEN) {
-            try {
-                ws.send(messageString);
-            } catch (error) {
-                console.error(`Error sending message to ${clientId}:`, error);
-            }
-        }
-    }
-}
-
-// Handle client disconnect
-function handleClientDisconnect(clientId) {
-    console.log(`Client ${clientId} disconnected`);
-
-    // Find sessions where this client is a participant
-    for (const [sessionId, session] of sessions) {
-        if (session.participants.has(clientId)) {
-            // Remove client from session
-            session.participants.delete(clientId);
-
-            // If session is now empty, clean it up
-            if (session.participants.size === 0) {
-                sessions.delete(sessionId);
-                console.log(`Session ${sessionId} deleted (no participants)`);
-            } else {
-                // Notify remaining participants that someone left
-                const leaveEvent = {
-                    type: 'USER_LEFT',
-                    payload: { userId: clientId },
-                    sourceId: 'system',
-                    timestamp: Date.now()
-                };
-
-                broadcastToSession(sessionId, leaveEvent);
-            }
-            break;
-        }
-    }
-}
-
-// Health check endpoint
+/**
+ * GET /health
+ * Health check endpoint
+ */
 app.get('/health', (req, res) => {
-    res.json({ status: 'ok', sessions: sessions.size });
+    const stats = wsHandler.getStats();
+    res.json({
+        status: 'ok',
+        ...stats,
+        timestamp: new Date().toISOString()
+    });
 });
+
+/**
+ * POST /api/sessions/create
+ * Create a new shopping session
+ * 
+ * Body: {
+ *   userId: string,
+ *   userName?: string,
+ *   metadata?: object
+ * }
+ */
+app.post('/api/sessions/create', async (req, res) => {
+    try {
+        const { userId, userName, metadata } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({ error: 'userId is required' });
+        }
+
+        const session = await sessionManager.createSession(userId, {
+            ...metadata,
+            hostName: userName
+        });
+
+        const inviteLink = sessionManager.generateInviteLink(session.id);
+
+        res.json({
+            sessionId: session.id,
+            inviteLink,
+            expiresAt: session.expiresAt
+        });
+    } catch (error) {
+        console.error('Error creating session:', error);
+        res.status(500).json({ error: 'Failed to create session' });
+    }
+});
+
+/**
+ * GET /api/sessions/:sessionId
+ * Get session details
+ */
+app.get('/api/sessions/:sessionId', async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+
+        const session = await sessionManager.getSession(sessionId);
+        if (!session) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
+
+        const participants = await sessionManager.getParticipants(sessionId);
+
+        res.json({
+            ...session,
+            participants
+        });
+    } catch (error) {
+        console.error('Error getting session:', error);
+        res.status(500).json({ error: 'Failed to get session' });
+    }
+});
+
+/**
+ * GET /api/config/webrtc
+ * Get WebRTC configuration (ICE servers)
+ */
+app.get('/api/config/webrtc', (req, res) => {
+    const iceServers = [
+        {
+            urls: process.env.STUN_SERVER_URL || 'stun:stun.l.google.com:19302'
+        }
+    ];
+
+    // Add TURN server if configured
+    if (process.env.TURN_SERVER_URL) {
+        iceServers.push({
+            urls: process.env.TURN_SERVER_URL,
+            username: process.env.TURN_USERNAME,
+            credential: process.env.TURN_CREDENTIAL
+        });
+    }
+
+    res.json({ iceServers });
+});
+
+/**
+ * GET /join/:sessionId
+ * Redirect to app with session ID
+ * This is used for invite links
+ */
+app.get('/join/:sessionId', async (req, res) => {
+    const { sessionId } = req.params;
+
+    const session = await sessionManager.getSession(sessionId);
+    if (!session) {
+        return res.status(404).send('Session not found or expired');
+    }
+
+    // Redirect to app with session ID in query params
+    const appUrl = process.env.APP_URL || 'http://localhost:3000';
+    res.redirect(`${appUrl}?join=${sessionId}`);
+});
+
+// ===== WEBSOCKET HANDLING =====
+
+wss.on('connection', (ws) => {
+    const clientId = nanoid(16);
+    wsHandler.handleConnection(ws, clientId);
+});
+
+// ===== SERVER STARTUP =====
 
 const PORT = process.env.PORT || 3001;
+
 server.listen(PORT, () => {
-    console.log(`Shop with Friends API server running on port ${PORT}`);
+    console.log(`
+╔═══════════════════════════════════════════════════════╗
+║                                                       ║
+║   🛍️  Shop with Friends API Server                   ║
+║                                                       ║
+║   ✅ HTTP Server:       http://localhost:${PORT}       ║
+║   ✅ WebSocket Server:  ws://localhost:${PORT}        ║
+║   ✅ Redis:             ${process.env.REDIS_URL ? 'Connected' : 'Local'}                     ║
+║   ✅ Environment:       ${process.env.NODE_ENV || 'development'}              ║
+║                                                       ║
+╚═══════════════════════════════════════════════════════╝
+  `);
 });
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+    console.log('SIGTERM received, closing server...');
+    server.close(async () => {
+        await sessionManager.close();
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', async () => {
+    console.log('\nSIGINT received, closing server...');
+    server.close(async () => {
+        await sessionManager.close();
+        process.exit(0);
+    });
+});
+
+export default app;

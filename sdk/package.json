@@ -1,0 +1,41 @@
+{
+    "name": "@shopwithfriends/sdk",
+    "version": "0.1.0",
+    "description": "JavaScript SDK for Shop with Friends - Add real-time collaborative shopping to any e-commerce site",
+    "main": "dist/swf.umd.js",
+    "module": "dist/swf.esm.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc && vite build",
+        "dev": "vite build --watch",
+        "typecheck": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@types/node": "^22.14.0",
+        "terser": "^5.44.1",
+        "typescript": "^5.8.2",
+        "vite": "^6.2.0"
+    },
+    "keywords": [
+        "ecommerce",
+        "collaborative-shopping",
+        "real-time",
+        "websocket",
+        "social-shopping",
+        "shopify",
+        "woocommerce"
+    ],
+    "author": "Sulaiman Adebayo <lanryweezy@gmail.com>",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/lanryweezy/shop-with-friends"
+    },
+    "bugs": {
+        "url": "https://github.com/lanryweezy/shop-with-friends/issues"
+    },
+    "homepage": "https://shopwithfriends.io"
+}

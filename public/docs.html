@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - Shop with Friends</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        nav {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .nav-links a {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 3rem;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 0.5rem 0.75rem;
+            color: #9ca3af;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .sidebar-link.active {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-left: 3px solid #667eea;
+            padding-left: calc(0.75rem - 3px);
+        }
+
+        .content {
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0.6));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            color: white;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: #e0e0e0;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: #b0b0b0;
+        }
+
+        code {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #a78bfa;
+        }
+
+        pre {
+            background: #111;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: #e0e0e0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge.coming-soon {
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .badge.beta {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .feature-desc {
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+
+        .api-endpoint {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 3px solid #10b981;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            border-radius: 6px;
+        }
+
+        .endpoint-method {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background: #10b981;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 0.5rem;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 3rem 0;
+            text-align: center;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s;
+            margin-top: 1rem;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+
+            .sidebar {
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-content">
+            <a href="/" class="logo">
+                <div class="logo-icon"></div>
+                Shop with Friends
+            </a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Getting Started</div>
+                <a href="#introduction" class="sidebar-link active">Introduction</a>
+                <a href="#quick-start" class="sidebar-link">Quick Start</a>
+                <a href="#features" class="sidebar-link">Features</a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Integration</div>
+                <a href="#sdk" class="sidebar-link">Client SDK</a>
+                <a href="#api" class="sidebar-link">WebSocket API</a>
+                <a href="#rest" class="sidebar-link">REST API</a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Platforms</div>
+                <a href="#shopify" class="sidebar-link">Shopify</a>
+                <a href="#woocommerce" class="sidebar-link">WooCommerce</a>
+                <a href="#custom" class="sidebar-link">Custom Sites</a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Resources</div>
+                <a href="#examples" class="sidebar-link">Examples</a>
+                <a href="#support" class="sidebar-link">Support</a>
+            </div>
+        </aside>
+
+        <!-- Documentation Content -->
+        <main class="content">
+            <h1 id="introduction">Documentation</h1>
+            <p>Shop with Friends is an embeddable API/SDK that adds real-time collaborative shopping to any e-commerce
+                platform. Let customers shop together, share products, sync carts, and even chat while browsing your
+                store.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🛒</div>
+                    <div class="feature-title">Shared Shopping Sessions</div>
+                    <div class="feature-desc">Create invite links so customers can shop together in real-time from
+                        anywhere</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <div class="feature-title">Real-time Sync</div>
+                    <div class="feature-desc">Navigation, product views, and cart updates synchronized instantly across
+                        all participants</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-title">Voice & Video <span class="badge coming-soon">Coming Soon</span></div>
+                    <div class="feature-desc">Built-in WebRTC voice and video chat for seamless communication</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">❤️</div>
+                    <div class="feature-title">Reactions</div>
+                    <div class="feature-desc">React to products with emojis that appear instantly for all shoppers</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <div class="feature-title">Group Shopping</div>
+                    <div class="feature-desc">Perfect for friends, families, and procurement teams making joint purchase
+                        decisions</div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔌</div>
+                    <div class="feature-title">Easy Integration</div>
+                    <div class="feature-desc">One script tag or NPM package - works with any e-commerce platform</div>
+                </div>
+            </div>
+
+            <!-- Quick Start -->
+            <h2 id="quick-start">Quick Start</h2>
+            <p>Get Shop with Friends running on your site in under 5 minutes.</p>
+
+            <h3>Option 1: Script Tag (Easiest)</h3>
+            <pre><code>&lt;!-- Add to your product pages --&gt;
+&lt;script src="https://cdn.shopwithfriends.io/v1/swf.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  ShopWithFriends.init({
+    apiKey: 'your_api_key_here',
+    productId: '12345'
+  });
+&lt;/script&gt;</code></pre>
+
+            <h3>Option 2: NPM Package</h3>
+            <pre><code>npm install @shopwithfriends/sdk
+
+import ShopWithFriends from '@shopwithfriends/sdk';
+
+const swf = new ShopWithFriends({
+  apiKey: 'your_api_key_here',
+  apiUrl: 'wss://api.shopwithfriends.io'
+});
+
+await swf.init();</code></pre>
+
+            <div class="cta-section">
+                <h3 style="margin: 0 0 0.5rem 0; color: white;">Ready to Get Started?</h3>
+                <p style="color: #b0b0b0; margin-bottom: 0;">Contact us for API access and start adding collaborative
+                    shopping to your store today.</p>
+                <a href="mailto:lanryweezy@gmail.com" class="cta-button">Request API Key</a>
+            </div>
+
+            <!-- Features -->
+            <h2 id="features">Core Features</h2>
+
+            <h3>Session Management</h3>
+            <p>Create shopping sessions with unique invite links. Sessions automatically expire after 30 minutes of
+                inactivity.</p>
+
+            <pre><code>// Create a session
+const session = await swf.createSession();
+console.log(session.inviteLink);
+// → "https://yourstore.com/join/sess_abc123xyz"
+
+// Join an existing session
+await swf.joinSession('sess_abc123xyz');</code></pre>
+
+            <h3>Real-time Synchronization</h3>
+            <p>All participants see the same products, cart updates, and scroll positions in real-time.</p>
+
+            <pre><code>// Listen for sync events
+swf.on('navigate', (data) => {
+  console.log('Friend viewed:', data.product.name);
+  // Navigate to the same product
+  window.location.href = `/products/${data.product.id}`;
+});
+
+swf.on('cartUpdate', (data) => {
+  console.log('Friend added to cart:', data.cart);
+  // Update your cart UI
+});</code></pre>
+
+            <h3>Reactions</h3>
+            <p>Let shoppers react to products with fun emoji reactions.</p>
+
+            <pre><code>// Send a reaction
+swf.sendReaction('fire'); // 🔥
+
+// Listen for reactions
+swf.on('reaction', (data) => {
+  showReactionAnimation(data.reaction);
+});</code></pre>
+
+            <!-- SDK Documentation -->
+            <h2 id="sdk">Client SDK <span class="badge coming-soon">Coming Soon</span></h2>
+            <p>The official Shop with Friends JavaScript SDK makes integration effortless. Full documentation coming
+                with SDK release.</p>
+
+            <!-- WebSocket API -->
+            <h2 id="api">WebSocket API <span class="badge beta">Live Now</span></h2>
+            <p>Connect directly to our WebSocket server for custom integrations.</p>
+
+            <h3>Connection</h3>
+            <pre><code>const ws = new WebSocket('wss://api.shopwithfriends.io');
+
+ws.onopen = () => {
+  // Connection established
+  console.log('Connected to Shop with Friends');
+};</code></pre>
+
+            <h3>Events</h3>
+
+            <div class="api-endpoint">
+                <span class="endpoint-method">SEND</span>
+                <code>CREATE_SESSION</code>
+                <p style="margin-top: 0.5rem; margin-bottom: 0;">Create a new shopping session and get invite link.</p>
+            </div>
+
+            <pre><code>{
+  "type": "CREATE_SESSION",
+  "payload": {
+    "metadata": {
+      "storeName": "My Store"
+    }
+  }
+}</code></pre>
+
+            <div class="api-endpoint">
+                <span class="endpoint-method">SEND</span>
+                <code>JOIN_SESSION</code>
+                <p style="margin-top: 0.5rem; margin-bottom: 0;">Join an existing session by ID.</p>
+            </div>
+
+            <pre><code>{
+  "type": "JOIN_SESSION",
+  "payload": {
+    "sessionId": "sess_abc123xyz",
+    "userName": "John Doe"
+  }
+}</code></pre>
+
+            <div class="api-endpoint">
+                <span class="endpoint-method">SEND</span>
+                <code>SYNC_EVENT</code>
+                <p style="margin-top: 0.5rem; margin-bottom: 0;">Broadcast navigation, cart updates, or reactions to all
+                    participants.</p>
+            </div>
+
+            <pre><code>{
+  "type": "SYNC_EVENT",
+  "payload": {
+    "eventType": "NAVIGATE",
+    "view": "DETAIL",
+    "product": { "id": "123", "name": "Office Chair" }
+  }
+}</code></pre>
+
+            <!-- REST API -->
+            <h2 id="rest">REST API</h2>
+            <p>Use our REST API for server-side session management.</p>
+
+            <div class="api-endpoint">
+                <span class="endpoint-method">POST</span>
+                <code>/api/sessions/create</code>
+                <p style="margin-top: 0.5rem; margin-bottom: 0;">Create a new session programmatically.</p>
+            </div>
+
+            <pre><code>POST https://ap i.shopwithfriends.io/api/sessions/create
+Content-Type: application/json
+
+{
+  "userId": "user_123",
+  "userName": "Tola"
+}
+
+// Response
+{
+  "sessionId": "sess_Vx8K2mN9pQ",
+  "inviteLink": "https://yourstore.com/join/sess_Vx8K2mN9pQ",
+  "expiresAt": 1701236367890
+}</code></pre>
+
+            <div class="api-endpoint">
+                <span class="endpoint-method">GET</span>
+                <code>/api/sessions/:sessionId</code>
+                <p style="margin-top: 0.5rem; margin-bottom: 0;">Get session details and participant list.</p>
+            </div>
+
+            <!-- Platform Integration -->
+            <h2 id="shopify">Shopify Integration <span class="badge coming-soon">Coming Soon</span></h2>
+            <p>Native Shopify app for one-click installation. No coding required.</p>
+
+            <h2 id="woocommerce">WooCommerce Plugin <span class="badge coming-soon">Coming Soon</span></h2>
+            <p>WordPress plugin for WooCommerce stores. Install and activate in seconds.</p>
+
+            <h2 id="custom">Custom Sites</h2>
+            <p>For custom e-commerce platforms, use our SDK or WebSocket API directly. Full flexibility to integrate
+                however you need.</p>
+
+            <!-- Examples -->
+            <h2 id="examples">Examples</h2>
+            <p>Check out our example implementations:</p>
+            <ul style="color: #b0b0b0; margin-left: 2rem;">
+                <li>React + Vite storefront (see <code>/examples/storefront.html</code>)</li>
+                <li>Vanilla JavaScript integration</li>
+                <li>Custom WebSocket client</li>
+            </ul>
+
+            <!-- Support -->
+            <h2 id="support">Support</h2>
+            <p>Need help? We're here for you:</p>
+            <ul style="color: #b0b0b0; margin-left: 2rem;">
+                <li>📧 Email: <a href="mailto:lanryweezy@gmail.com" style="color: #667eea;">lanryweezy@gmail.com</a>
+                </li>
+                <li>💼 LinkedIn: <a href="https://www.linkedin.com/in/sulaiman-olanrewaju-adebayo-b7b29612a/"
+                        style="color: #667eea;" target="_blank">Connect with Sulaiman</a></li>
+                <li>📱 Phone: +234 813 750 2933</li>
+                <li>🏢 Company: Street Heart Technologies</li>
+            </ul>
+
+            <div class="cta-section" style="margin-top: 4rem;">
+                <h3 style="margin: 0 0 0.5rem 0; color: white;">Building the Future of Social Commerce</h3>
+                <p style="color: #b0b0b0;">Join us in transforming how people shop online. Perfect for African
+                    e-commerce and beyond.</p>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

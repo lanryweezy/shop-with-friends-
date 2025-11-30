@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop with Friends SDK - Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .product {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .price {
+            font-size: 24px;
+            color: #10b981;
+            font-weight: 700;
+            margin: 16px 0;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+
+        button:hover {
+            background: #5a67d8;
+        }
+
+        .log {
+            margin-top: 30px;
+            background: #1a1a1a;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="product">
+        <h1>Modern Office Chair</h1>
+        <p>Ergonomic design with lumbar support. Perfect for long hours of work.</p>
+        <div class="price">$299.99</div>
+
+        <button id="addToCart">Add to Cart</button>
+        <button id="viewDetails">View Details</button>
+
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <small style="color: #6b7280;">
+                The "Shop Together" button should appear in the bottom-right corner.
+                Click it to create a session and invite friends!
+            </small>
+        </div>
+    </div>
+
+    <div class="log">
+        <div style="margin-bottom: 12px; color: #667eea; font-weight: bold;">SDK Event Log:</div>
+        <div id="logContainer"></div>
+    </div>
+
+    <!-- Include SDK (using ES modules for now) -->
+    <script type="module">
+        // Import SDK modules
+        import { ShopWithFriends } from './src/index.js';
+
+        // Helper to log events
+        function log(message, data = null) {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            if (data) {
+                entry.textContent += ` ${JSON.stringify(data)}`;
+            }
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Initialize SDK
+        log('Initializing Shop with Friends SDK...');
+
+        const swf = new ShopWithFriends({
+            apiKey: 'demo_key_123',
+            apiUrl: 'ws://localhost:3001',
+            productId: 'chair-001',
+            productName: 'Modern Office Chair',
+
+            // Callbacks
+            onSessionCreated: (session) => {
+                log('Session created!', { sessionId: session.sessionId });
+            },
+
+            onParticipantJoined: (user) => {
+                log('Participant joined!', user);
+                alert(`${user.userName} joined the session!`);
+            },
+
+            onParticipantLeft: (user) => {
+                log('Participant left', user);
+            },
+
+            onSync: (event) => {
+                log('Sync event received', { type: event.eventType });
+            },
+
+            onError: (error) => {
+                log('ERROR: ' + error.message);
+            }
+        });
+
+        // Initialize
+        swf.init()
+            .then(() => {
+                log('✅ SDK initialized successfully!');
+                log(`Client ID: ${swf.getClientId()}`);
+            })
+            .catch((error) => {
+                log('❌ Failed to initialize SDK: ' + error.message);
+            });
+
+        // Listen for sync events
+        swf.on('sync:navigate', (data) => {
+            log('Friend navigated to:', data);
+        });
+
+        swf.on('sync:cart_update', (data) => {
+            log('Friend updated cart:', data);
+        });
+
+        swf.on('sync:reaction', (data) => {
+            log('Friend reacted:', { reaction: data.reaction });
+        });
+
+        // Simulate product interactions
+        document.getElementById('addToCart').addEventListener('click', () => {
+            log('Adding to cart...');
+
+            const cart = [{
+                id: 'chair-001',
+                name: 'Modern Office Chair',
+                price: 299.99,
+                quantity: 1
+            }];
+
+            swf.syncCart(cart);
+
+            alert('Added to cart! Your friend will see this update in real-time.');
+        });
+
+        document.getElementById('viewDetails').addEventListener('click', () => {
+            log('Viewing product details...');
+
+            swf.syncNavigation({
+                productId: 'chair-001',
+                productName: 'Modern Office Chair',
+                view: 'DETAIL'
+            });
+
+            alert('Navigated to details! Your friend will see this.');
+        });
+
+        // Make SDK available in console for testing
+        window.swf = swf;
+        console.log('SDK instance available as window.swf');
+    </script>
+</body>
+
+</html>

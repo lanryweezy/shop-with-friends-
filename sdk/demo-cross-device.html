@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop with Friends - Cross-Device Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .demo-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 60px;
+            perspective: 1000px;
+        }
+
+        /* Laptop Frame */
+        .laptop-frame {
+            position: relative;
+            width: 900px;
+            transition: transform 0.3s ease;
+        }
+
+        .laptop-frame:hover {
+            transform: translateY(-10px);
+        }
+
+        .laptop-screen {
+            background: #1a1a1a;
+            border-radius: 12px 12px 0 0;
+            padding: 20px 20px 40px;
+            box-shadow:
+                0 0 0 8px #2a2a2a,
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 80px rgba(102, 126, 234, 0.3);
+        }
+
+        .laptop-screen-inner {
+            width: 100%;
+            height: 600px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .laptop-base {
+            height: 30px;
+            background: linear-gradient(to bottom, #2a2a2a 0%, #1a1a1a 100%);
+            border-radius: 0 0 20px 20px;
+            position: relative;
+        }
+
+        .laptop-base::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: #333;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .laptop-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 6px;
+            background: #1a1a1a;
+            border-radius: 0 0 8px 8px;
+        }
+
+        /* Phone Frame (same as before) */
+        .phone-frame {
+            position: relative;
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 12px;
+            box-shadow:
+                0 0 0 8px rgba(0, 0, 0, 0.1),
+                0 30px 60px rgba(0, 0, 0, 0.3),
+                0 0 100px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .phone-frame:hover {
+            transform: translateY(-10px) scale(1.02);
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 28px;
+            background: #000;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Common Content Styles */
+        .device-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 24px;
+            color: white;
+            position: relative;
+        }
+
+        .laptop-screen-inner .device-header {
+            padding: 40px;
+        }
+
+        .device-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .laptop-screen-inner .device-header h2 {
+            font-size: 2.5rem;
+        }
+
+        .device-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .device-badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse-status 2s infinite;
+        }
+
+        @keyframes pulse-status {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scale(0.9);
+            }
+        }
+
+        .product-section {
+            padding: 32px;
+            background: #f9fafb;
+            min-height: 500px;
+        }
+
+        .laptop-screen-inner .product-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        .product-main {
+            grid-column: 1;
+        }
+
+        .product-sidebar {
+            grid-column: 2;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            margin-bottom: 24px;
+        }
+
+        .laptop-screen-inner .product-image {
+            height: 400px;
+        }
+
+        .product-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .laptop-screen-inner .product-title {
+            font-size: 2rem;
+        }
+
+        .product-price {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .laptop-screen-inner .product-price {
+            font-size: 2.5rem;
+        }
+
+        .product-description {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .laptop-screen-inner .product-description {
+            display: block;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .laptop-screen-inner .action-buttons {
+            flex-direction: row;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f3f4f6;
+        }
+
+        .voice-indicator {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(239, 68, 68, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+            z-index: 20;
+        }
+
+        .laptop-screen-inner .voice-indicator {
+            bottom: 60px;
+            padding: 16px 32px;
+            font-size: 1.1rem;
+        }
+
+        .voice-wave {
+            width: 4px;
+            height: 18px;
+            background: white;
+            border-radius: 2px;
+            animation: wave 0.6s ease-in-out infinite;
+        }
+
+        .voice-wave:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .voice-wave:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .voice-wave:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                height: 14px;
+            }
+
+            50% {
+                height: 28px;
+            }
+        }
+
+        .device-label {
+            position: absolute;
+            top: -50px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .instructions {
+            text-align: center;
+            color: white;
+            margin-top: 60px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .instructions h3 {
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .instructions p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            opacity: 0.95;
+        }
+
+        @media (max-width: 1400px) {
+            .demo-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .laptop-frame {
+                width: 700px;
+            }
+
+            .laptop-screen-inner {
+                height: 500px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .laptop-frame {
+                width: 90%;
+            }
+
+            .phone-frame {
+                transform: scale(0.85);
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hero">
+        <h1>💻📱 Shop Anywhere, Together</h1>
+        <p>Laptop to phone, desktop to tablet - voice shopping works everywhere</p>
+    </div>
+
+    <div class="demo-container">
+        <!-- Laptop Device -->
+        <div class="laptop-frame">
+            <div class="device-label">Tola's Laptop 💻</div>
+            <div class="laptop-screen">
+                <div class="laptop-notch"></div>
+                <div class="laptop-screen-inner">
+                    <div class="device-header">
+                        <div class="device-info">
+                            <h2>Tola</h2>
+                            <span class="device-badge">💻 Laptop</span>
+                        </div>
+                        <span class="status-indicator">
+                            <span class="status-dot"></span>
+                            <span id="status-laptop">Ready to shop</span>
+                        </span>
+                    </div>
+                    <div class="product-section">
+                        <div class="product-main">
+                            <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=600&fit=crop"
+                                class="product-image" alt="Product">
+                            <div class="product-title">Premium Wireless Headphones</div>
+                            <div class="product-price">$299.99</div>
+                        </div>
+                        <div class="product-sidebar">
+                            <div class="product-description">
+                                Experience studio-quality sound with active noise cancellation.
+                                30-hour battery life, premium comfort, and seamless Bluetooth connectivity.
+                            </div>
+                            <div class="action-buttons">
+                                <button class="btn btn-primary" onclick="startSession()">
+                                    🛍️ Shop with Friend
+                                </button>
+                                <button class="btn btn-secondary">
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="voice-indicator" id="voice-laptop">
+                        <div class="voice-wave"></div>
+                        <div class="voice-wave"></div>
+                        <div class="voice-wave"></div>
+                        <span>On Call with Chidi</span>
+                    </div>
+                </div>
+            </div>
+            <div class="laptop-base"></div>
+        </div>
+
+        <!-- Phone Device -->
+        <div class="phone-frame">
+            <div class="device-label">Chidi's Phone 📱</div>
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+                <div class="device-header">
+                    <div class="device-info">
+                        <h2>Chidi</h2>
+                        <span class="device-badge">📱 iPhone</span>
+                    </div>
+                    <span class="status-indicator">
+                        <span class="status-dot"></span>
+                        <span id="status-phone">Waiting...</span>
+                    </span>
+                </div>
+                <div class="product-section">
+                    <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop"
+                        class="product-image" alt="Product">
+                    <div class="product-title">Premium Wireless Headphones</div>
+                    <div class="product-price">$299.99</div>
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="join-btn" disabled>
+                            👋 Join Friend
+                        </button>
+                    </div>
+                </div>
+                <div class="voice-indicator" id="voice-phone">
+                    <div class="voice-wave"></div>
+                    <div class="voice-wave"></div>
+                    <div class="voice-wave"></div>
+                    <span>On Call with Tola</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <h3>🌍 Shop Together, Any Device</h3>
+        <p>
+            <strong>Real-world scenario:</strong> Tola is browsing on her laptop at work.
+            She finds amazing headphones and clicks "Shop with Friend".
+            Chidi gets the link on his phone, joins instantly, and they're both on voice chat
+            discussing whether to buy. <strong>Different devices, same experience!</strong>
+        </p>
+    </div>
+
+    <script type="module">
+        import { ShopWithFriends } from './dist/swf.esm.js';
+
+        let sdkLaptop, sdkPhone;
+        let sessionLaptop;
+
+        // Initialize SDK for Laptop
+        sdkLaptop = new ShopWithFriends({
+            apiKey: 'demo-key',
+            apiUrl: 'ws://localhost:3001',
+            enableVoice: true,
+            showInviteButton: false,
+            onSessionCreated: (session) => {
+                sessionLaptop = session;
+                document.getElementById('status-laptop').textContent = 'Session created';
+                document.getElementById('join-btn').disabled = false;
+                document.getElementById('join-btn').classList.remove('btn-secondary');
+                document.getElementById('join-btn').classList.add('btn-primary');
+
+                // Auto-join from phone after 2 seconds
+                setTimeout(() => joinSession(), 2000);
+            },
+            onParticipantJoined: (user) => {
+                document.getElementById('status-laptop').textContent = `On call with ${user.userName || 'Friend'}`;
+                document.getElementById('voice-laptop').style.display = 'flex';
+            }
+        });
+
+        // Initialize SDK for Phone
+        sdkPhone = new ShopWithFriends({
+            apiKey: 'demo-key',
+            apiUrl: 'ws://localhost:3001',
+            enableVoice: true,
+            showInviteButton: false,
+            onParticipantJoined: (user) => {
+                document.getElementById('status-phone').textContent = `On call with Tola`;
+                document.getElementById('voice-phone').style.display = 'flex';
+            }
+        });
+
+        // Initialize both SDKs
+        (async () => {
+            await sdkLaptop.init();
+            await sdkPhone.init();
+            console.log('✅ Both devices initialized');
+        })();
+
+        window.startSession = async function () {
+            document.getElementById('status-laptop').textContent = 'Creating session...';
+            await sdkLaptop.createSession();
+        };
+
+        window.joinSession = async function () {
+            if (sessionLaptop) {
+                document.getElementById('status-phone').textContent = 'Joining...';
+                document.getElementById('join-btn').textContent = '📞 Connecting...';
+                await sdkPhone.joinSession(sessionLaptop.sessionId);
+            }
+        };
+    </script>
+</body>
+
+</html>

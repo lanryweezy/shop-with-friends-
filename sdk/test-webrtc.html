@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Test - Shop with Friends SDK</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f9fafb;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+        }
+
+        .status {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .log {
+            background: #1f2937;
+            color: #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin: 4px 0;
+            padding: 4px 0;
+            border-bottom: 1px solid #374151;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>🎤 WebRTC Voice Chat Test</h1>
+        <p>Test the Shop with Friends SDK with voice chat enabled</p>
+    </div>
+
+    <div class="status">
+        <h3>SDK Status: <span id="sdk-status" class="badge">Initializing...</span></h3>
+        <p><strong>Session ID:</strong> <span id="session-id">-</span></p>
+        <p><strong>Voice Status:</strong> <span id="voice-status">Inactive</span></p>
+    </div>
+
+    <div class="log" id="event-log">
+        <div class="log-entry">📋 Event log initialized</div>
+    </div>
+
+    <!-- Include SDK (using production bundle) -->
+    <script type="module">
+        import { ShopWithFriends } from './dist/swf.esm.js';
+
+        // Helper to log events
+        function log(message, type = 'info') {
+            const logEl = document.getElementById('event-log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            const timestamp = new Date().toLocaleTimeString();
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '📌';
+            entry.textContent = `[${timestamp}] ${icon} ${message}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function updateStatus(status, isSuccess = true) {
+            const statusEl = document.getElementById('sdk-status');
+            statusEl.textContent = status;
+            statusEl.className = `badge ${isSuccess ? 'success' : 'error'}`;
+        }
+
+        // Initialize SDK with WebRTC enabled
+        const sdk = new ShopWithFriends({
+            apiKey: 'test-api-key',
+            apiUrl: 'ws://localhost:3001',
+            enableVoice: true,  // Enable WebRTC voice
+            showInviteButton: true,
+            onSessionCreated: (session) => {
+                log('Session created: ' + session.sessionId, 'success');
+                document.getElementById('session-id').textContent = session.sessionId;
+            },
+            onParticipantJoined: (data) => {
+                log(`Participant joined: ${data.userName} (${data.userId})`, 'success');
+            },
+            onParticipantLeft: (data) => {
+                log(`Participant left: ${data.userId}`, 'info');
+            },
+            onSync: (event) => {
+                log(`Sync event: ${event.eventType}`, 'info');
+            },
+            onError: (error) => {
+                log('Error: ' + error.message, 'error');
+                updateStatus('Error', false);
+            }
+        });
+
+        // WebRTC event listeners
+        sdk.on('webrtc:localStream', (stream) => {
+            log('Local microphone stream acquired', 'success');
+            document.getElementById('voice-status').textContent = '🎤 Active';
+        });
+
+        sdk.on('webrtc:remoteStream', (data) => {
+            log(`Remote stream from peer: ${data.peerId}`, 'success');
+
+            // Create audio element to play remote stream
+            const audio = document.createElement('audio');
+            audio.srcObject = data.stream;
+            audio.autoplay = true;
+            document.body.appendChild(audio);
+        });
+
+        sdk.on('webrtc:callEnded', () => {
+            log('Voice call ended', 'info');
+            document.getElementById('voice-status').textContent = 'Inactive';
+        });
+
+        // Initialize
+        (async () => {
+            try {
+                await sdk.init();
+                updateStatus('Connected', true);
+                log('SDK initialized successfully', 'success');
+
+                // Check for auto-join from URL
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('join')) {
+                    log('Auto-joining session from URL', 'info');
+                }
+            } catch (error) {
+                log('Failed to initialize: ' + error.message, 'error');
+                updateStatus('Failed', false);
+            }
+        })();
+    </script>
+</body>
+
+</html>

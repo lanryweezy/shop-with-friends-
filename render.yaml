@@ -1,0 +1,59 @@
+# Render.com Deployment Configuration
+# https://render.com/docs/yaml-spec
+
+services:
+  # Main WebSocket API Server
+  - type: web
+    name: shopwithfriends-api
+    runtime: node
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: npm install
+    startCommand: node api/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: APP_URL
+        sync: false # Set this in Render dashboard to your frontend URL
+      - key: REDIS_URL
+        fromDatabase:
+          name: shopwithfriends-redis
+          property: connectionString
+      - key: TURN_SERVER_URL
+        value: turn:openrelay.metered.ca:80
+      - key: TURN_USERNAME
+        value: openrelayproject
+      - key: TURN_CREDENTIAL
+        value: openrelayproject
+      - key: STUN_SERVER_URL
+        value: stun:stun.l.google.com:19302
+      - key: SESSION_TTL_MINUTES
+        value: 30
+      - key: CORS_ORIGINS
+        sync: false # Set to your frontend URLs (comma-separated)
+    
+    healthCheckPath: /health
+
+  # Redis Database
+  - type: redis
+    name: shopwithfriends-redis
+    region: oregon
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: [] # Allow all IPs (or restrict as needed)
+
+# Optional: Static Frontend (if deploying frontend separately)
+# - type: web
+#   name: shopwithfriends-frontend
+#   runtime: static
+#   buildCommand: npm run build
+#   staticPublishPath: ./dist
+#   envVars:
+#     - key: VITE_API_URL
+#       fromService:
+#         type: web
+#         name: shopwithfriends-api
+#         envVarKey: RENDER_EXTERNAL_URL
