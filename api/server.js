@@ -19,7 +19,12 @@ const wsHandler = new WebSocketHandler(sessionManager);
 app.use(express.json());
 
 // CORS configuration
-const corsOrigins = process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'];
+const corsOrigins = process.env.CORS_ORIGINS?.split(',') || [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://shop-with-friends.vercel.app',
+    'https://shop-with-friends-git-main-lanryweezys-projects.vercel.app'
+];
 app.use(cors({
     origin: corsOrigins,
     credentials: true
