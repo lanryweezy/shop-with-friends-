@@ -17,10 +17,10 @@
 -%}
 
 <!-- Shop with Friends SDK -->
-<script src="https://cdn.shopwithfriends.io/v1/swf.esm.js" type="module"></script>
+<script src="https://unpkg.com/shop-with-friends@1.1.0/dist/shop-with-friends.js" type="module"></script>
 
 <script type="module">
-  import { ShopWithFriends } from 'https://cdn.shopwithfriends.io/v1/swf.esm.js';
+  import { ShopWithFriends } from 'https://unpkg.com/shop-with-friends@1.1.0/dist/shop-with-friends.js';
   
   // Get product data
   const productData = {
@@ -41,7 +41,7 @@
   // Initialize SDK
   const swf = new ShopWithFriends({
     apiKey: '{{ swf_api_key }}',
-    apiUrl: 'wss://api.shopwithfriends.io',
+    apiUrl: 'wss://shop-with-friends-production.up.railway.app',
     
     // UI Configuration
     showInviteButton: {{ settings.swf_show_button | default: true }},

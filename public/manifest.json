@@ -1,0 +1,29 @@
+{
+    "name": "Shop with Friends",
+    "short_name": "Shop w/ Friends",
+    "description": "The Future of Commerce - Collaborative shopping with voice & video",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0a0a",
+    "theme_color": "#667eea",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/favicon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/apple-touch-icon.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "categories": [
+        "shopping",
+        "social",
+        "business"
+    ],
+    "screenshots": []
+}

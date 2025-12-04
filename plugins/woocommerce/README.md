@@ -29,7 +29,7 @@
 
 ### Get API Key
 
-1. Sign up at [shopwithfriends.io](https://shopwithfriends.io)
+1. Sign up at [shop-with-friends.vercel.app](https://shop-with-friends.vercel.app)
 2. Create a new project
 3. Copy your API key
 4. Paste in **WordPress Admin > Settings > Shop with Friends > API Key**
@@ -196,9 +196,9 @@ add_filter('swf_should_load', function($should_load, $product_id) {
 ## Support
 
 - 📧 **Email**: support@shopwithfriends.io
-- 💬 **Live Chat**: [shopwithfriends.io](https://shopwithfriends.io)
-- 📚 **Documentation**: [shopwithfriends.io/docs](https://shopwithfriends.io/docs)
-- 🐛 **Report Bug**: [GitHub Issues](https://github.com/shopwithfriends/woocommerce-plugin/issues)
+- 💬 **Live Chat**: [shop-with-friends.vercel.app](https://shop-with-friends.vercel.app)
+- 📚 **Documentation**: [shop-with-friends.vercel.app/docs.html](https://shop-with-friends.vercel.app/docs.html)
+- 🐛 **Report Bug**: [GitHub Issues](https://github.com/lanryweezy/shop-with-friends/issues)
 
 ---
 

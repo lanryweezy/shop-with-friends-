@@ -177,9 +177,9 @@ class ShopWithFriends_Plugin {
         // Enqueue SDK
         wp_enqueue_script(
             'shop-with-friends-sdk',
-            'https://cdn.shopwithfriends.io/v1/swf.esm.js',
+            'https://unpkg.com/shop-with-friends@1.1.0/dist/shop-with-friends.js',
             array(),
-            '1.0.0',
+            '1.1.0',
             true
         );
         
@@ -191,7 +191,7 @@ class ShopWithFriends_Plugin {
         
         $config = array(
             'apiKey' => $api_key,
-            'apiUrl' => 'wss://api.shopwithfriends.io',
+            'apiUrl' => 'wss://shop-with-friends-production.up.railway.app',
             'showInviteButton' => (bool)get_option('swf_show_button', true),
             'enableVoice' => (bool)get_option('swf_enable_voice', true), // VOICE IS CORE!
             'theme' => get_option('swf_theme', 'dark'),
@@ -217,7 +217,7 @@ class ShopWithFriends_Plugin {
         
         return <<<JS
 (async function() {
-    const { ShopWithFriends } = await import('https://cdn.shopwithfriends.io/v1/swf.esm.js');
+    const { ShopWithFriends } = await import('https://unpkg.com/shop-with-friends@1.1.0/dist/shop-with-friends.js');
     
     const config = {$config_json};
     

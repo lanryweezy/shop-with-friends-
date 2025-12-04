@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shop-with-friends.vercel.app/sitemap.xml

@@ -97,7 +97,7 @@ Add this line to your `sections/product-template.liquid` or `sections/main-produ
 
 ### Step 4: Get Your API Key
 
-1. Sign up at [shopwithfriends.io](https://shopwithfriends.io)
+1. Sign up at [shop-with-friends.vercel.app](https://shop-with-friends.vercel.app)
 2. Create a new project
 3. Copy your API key
 4. Paste it in **Shopify Admin > Themes > Customize > Theme Settings > Shop with Friends**
@@ -217,8 +217,8 @@ swf.on('sync:cart', (data) => {
 
 - 📧 Email: support@shopwithfriends.io
 - 💬 Discord: [Join our community](https://discord.gg/shopwithfriends)
-- 📚 Docs: [shopwithfriends.io/docs](https://shopwithfriends.io/docs)
-- 🐛 Issues: [GitHub Issues](https://github.com/shopwithfriends/shopify-plugin/issues)
+- 📚 Docs: [shop-with-friends.vercel.app/docs.html](https://shop-with-friends.vercel.app/docs.html)
+- 🐛 Issues: [GitHub Issues](https://github.com/lanryweezy/shop-with-friends/issues)
 
 ---
 

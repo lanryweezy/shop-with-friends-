@@ -452,8 +452,7 @@ const App = () => {
             </div>
           </div>
 
-          {/* Bento Grid - Benefits with Stats */}
-          <div className="grid md:grid-cols-2 gap-6 relative">
+          <div className="grid md:grid-cols-3 gap-6 relative">
             {/* Animated Background Mesh */}
             <div className="absolute inset-0 -z-10 overflow-hidden rounded-3xl">
               <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
@@ -461,63 +460,45 @@ const App = () => {
               <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
             </div>
 
-            {/* Card 1 - Higher Conversion (Large) */}
-            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 hover:border-purple-500/30 transition-all duration-500 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10">
-                {/* Icon */}
-                <div className="w-20 h-20 mb-6 relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl blur-xl opacity-50"></div>
-                  <div className="relative bg-gradient-to-br from-purple-500 to-blue-600 rounded-2xl p-4 flex items-center justify-center">
-                    <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Stat */}
-                <div className="text-5xl md:text-6xl font-black bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-3 md:mb-4 tracking-tight">
+            {/* Card 1 - Higher Conversion */}
+            <div className="bg-[#111] border border-white/10 rounded-3xl overflow-hidden hover:border-purple-500/30 transition-all duration-500 group">
+              <div className="h-48 overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#111] to-transparent z-10"></div>
+                <img
+                  src="/images/metric-conversion.png"
+                  alt="Friends shopping on video call"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+              <div className="p-6 md:p-8 -mt-12 relative z-20">
+                <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
                   2.5x
                 </div>
-
-                {/* Title */}
-                <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 text-white">Higher Conversion</h3>
-
-                {/* Description */}
-                <p className="text-gray-400 text-sm md:text-base leading-relaxed">
+                <h3 className="text-xl font-bold mb-3 text-white">Higher Conversion</h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">
                   Friends convince friends. When customers shop together via voice, they validate each other's purchases. Decision made faster.
                 </p>
-
-                {/* Stat Label */}
-                <div className="mt-6 pt-6 border-t border-white/10">
-                  <p className="text-sm text-gray-500 uppercase tracking-wider">vs. solo browsing</p>
+                <div className="pt-4 border-t border-white/10">
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">vs. solo browsing</p>
                 </div>
               </div>
             </div>
 
             {/* Card 2 - Bigger Carts */}
-            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 hover:border-pink-500/30 transition-all duration-500 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10">
-                {/* Icon */}
-                <div className="w-16 h-16 mb-4 relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl blur-lg opacity-50"></div>
-                  <div className="relative bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl p-3 flex items-center justify-center">
-                    <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Stat */}
-                <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent mb-2 md:mb-3 tracking-tight">
+            <div className="bg-[#111] border border-white/10 rounded-3xl overflow-hidden hover:border-pink-500/30 transition-all duration-500 group">
+              <div className="h-48 overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#111] to-transparent z-10"></div>
+                <img
+                  src="/images/metric-cart.png"
+                  alt="Luxury shopping cart"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+              <div className="p-6 md:p-8 -mt-12 relative z-20">
+                <div className="text-3xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent mb-2">
                   +45%
                 </div>
-
-                {/* Title */}
-                <h3 className="text-xl font-bold mb-2 text-white">Bigger Carts</h3>
-
-                {/* Description */}
+                <h3 className="text-xl font-bold mb-3 text-white">Bigger Carts</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">
                   "You should get this too!" Shared recommendations drive average order values up.
                 </p>
@@ -525,31 +506,90 @@ const App = () => {
             </div>
 
             {/* Card 3 - Brand Loyalty */}
-            <div className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-md border border-white/10 rounded-3xl p-6 md:p-8 hover:border-emerald-500/30 transition-all duration-500 group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              <div className="relative z-10">
-                {/* Icon */}
-                <div className="w-16 h-16 mb-4 relative">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl blur-lg opacity-50"></div>
-                  <div className="relative bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl p-3 flex items-center justify-center">
-                    <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Stat */}
-                <div className="text-4xl md:text-5xl font-black bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent mb-2 md:mb-3 tracking-tight">
+            <div className="bg-[#111] border border-white/10 rounded-3xl overflow-hidden hover:border-emerald-500/30 transition-all duration-500 group">
+              <div className="h-48 overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#111] to-transparent z-10"></div>
+                <img
+                  src="/images/metric-loyalty.png"
+                  alt="Queue outside store"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+              <div className="p-6 md:p-8 -mt-12 relative z-20">
+                <div className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent mb-2">
                   3x
                 </div>
-
-                {/* Title */}
-                <h3 className="text-xl font-bold mb-2 text-white">Brand Loyalty</h3>
-
-                {/* Description */}
+                <h3 className="text-xl font-bold mb-3 text-white">Brand Loyalty</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">
                   Longer sessions. Customers remember experiences, not just checkouts.
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* The Architecture (Anatomy) - Moved Up */}
+      <section id="manifesto" className="py-24 bg-white/5 border-y border-white/5">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-3xl font-bold mb-6">It's not an app.<br /><span className="text-white">Shop with Friends</span></h2>
+              <p className="text-gray-400 text-lg leading-relaxed mb-8">
+                Shop with Friends doesn't take over your platform. It attaches to it like a social spine. It provides the connective tissue that ties two human brains together while they browse your store.
+              </p>
+
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0 border border-blue-500/20">
+                    <Globe size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg text-white">A Shared Brain</h3>
+                    <p className="text-gray-500 text-sm mt-1">One session ID. Two devices. Zero friction. No signups required.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 shrink-0 border border-purple-500/20">
+                    <Zap size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg text-white">The Nervous System</h3>
+                    <p className="text-gray-500 text-sm mt-1">Real-time WebRTC & Websockets sync scrolling, reactions, and voice in milliseconds.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 shrink-0 border border-green-500/20">
+                    <Code2 size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg text-white">Drop-in Parasite</h3>
+                    <p className="text-gray-500 text-sm mt-1">Snap it into any e-commerce site like a Lego brick. It adapts to the host.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Code Snippet Visual */}
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl opacity-20 blur-lg"></div>
+              <div className="relative bg-[#111] rounded-xl border border-white/10 p-6 shadow-2xl font-mono text-sm">
+                <div className="flex gap-2 mb-4 opacity-50">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+                <div className="text-gray-400 space-y-2">
+                  <p><span className="text-purple-400">const</span> <span className="text-blue-400">session</span> = <span className="text-purple-400">await</span> spine.<span className="text-yellow-300">connect</span>();</p>
+                  <p className="text-gray-500">// That's it. You are now synced.</p>
+                  <div className="h-4"></div>
+                  <p className="text-gray-500">&lt;!-- Or just drop this in --&gt;</p>
+                  <p>
+                    <span className="text-blue-400">&lt;script</span> <span className="text-purple-400">src</span>=<span className="text-green-400">"https://api.shopwithfriends.io/spine.js"</span><span className="text-blue-400">&gt;&lt;/script&gt;</span>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -639,78 +679,63 @@ const App = () => {
         </div>
       </section>
 
-      {/* The Architecture (Anatomy) */}
-      <section id="manifesto" className="py-24 bg-white/5 border-y border-white/5">
+      {/* Robust Footer */}
+      <footer className="bg-[#050505] border-t border-white/10 pt-16 pb-8">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-3xl font-bold mb-6">It’s not an app.<br />It’s an organ.</h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-8">
-                Shop with Friends doesn't take over your platform. It attaches to it like a social spine. It provides the connective tissue that ties two human brains together while they browse your store.
-              </p>
-
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0 border border-blue-500/20">
-                    <Globe size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg text-white">A Shared Brain</h3>
-                    <p className="text-gray-500 text-sm mt-1">One session ID. Two devices. Zero friction. No signups required.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 shrink-0 border border-purple-500/20">
-                    <Zap size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg text-white">The Nervous System</h3>
-                    <p className="text-gray-500 text-sm mt-1">Real-time WebRTC & Websockets sync scrolling, reactions, and voice in milliseconds.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 shrink-0 border border-green-500/20">
-                    <Code2 size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg text-white">Drop-in Parasite</h3>
-                    <p className="text-gray-500 text-sm mt-1">Snap it into any e-commerce site like a Lego brick. It adapts to the host.</p>
-                  </div>
-                </div>
+          <div className="grid md:grid-cols-4 gap-12 mb-12">
+            <div className="col-span-1 md:col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600"></div>
+                <span className="font-bold text-lg">Shop with Friends</span>
               </div>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                The Future of Commerce.
+                <br />
+                Turning solo browsing into social experiences.
+              </p>
             </div>
 
-            {/* Code Snippet Visual */}
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl opacity-20 blur-lg"></div>
-              <div className="relative bg-[#111] rounded-xl border border-white/10 p-6 shadow-2xl font-mono text-sm">
-                <div className="flex gap-2 mb-4 opacity-50">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
-                <div className="text-gray-400 space-y-2">
-                  <p><span className="text-purple-400">const</span> <span className="text-blue-400">session</span> = <span className="text-purple-400">await</span> spine.<span className="text-yellow-300">connect</span>();</p>
-                  <p className="text-gray-500">// That's it. You are now synced.</p>
-                  <div className="h-4"></div>
-                  <p className="text-gray-500">&lt;!-- Or just drop this in --&gt;</p>
-                  <p>
-                    <span className="text-blue-400">&lt;script</span> <span className="text-purple-400">src</span>=<span className="text-green-400">"https://api.shopwithfriends.io/spine.js"</span><span className="text-blue-400">&gt;&lt;/script&gt;</span>
-                  </p>
-                </div>
-              </div>
+            <div>
+              <h4 className="font-bold text-white mb-4">Product</h4>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Integrations</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Enterprise</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-white mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li><a href="/docs.html" className="hover:text-white transition-colors">Documentation</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">API Reference</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Community</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-white mb-4">Company</h4>
+              <ul className="space-y-2 text-sm text-gray-500">
+                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Legal</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-600 text-sm">© 2025 Shop with Friends. All rights reserved.</p>
+            <div className="flex gap-6">
+              <a href="#" className="text-gray-600 hover:text-white transition-colors"><Globe size={20} /></a>
+              <a href="#" className="text-gray-600 hover:text-white transition-colors"><Code2 size={20} /></a>
             </div>
           </div>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-10 text-center text-gray-600 text-sm border-t border-white/5">
-        <p>Built for the future of African Commerce.</p>
       </footer>
-    </div>
+    </div >
   );
 };
 
