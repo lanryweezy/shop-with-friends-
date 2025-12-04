@@ -1,6 +1,6 @@
 {
     "name": "shop-with-friends",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Add real-time collaborative shopping to any e-commerce site with a single line of code.",
     "type": "module",
     "main": "./dist/shop-with-friends.umd.cjs",

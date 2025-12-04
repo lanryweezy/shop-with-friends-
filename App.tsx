@@ -373,7 +373,7 @@ const App = () => {
       <nav className="border-b border-white/5 bg-black/50 backdrop-blur-xl sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600"></div>
+            <img src="/favicon.png" alt="Shop with Friends" className="w-8 h-8" />
             Shop with Friends
           </div>
           <a
@@ -529,72 +529,6 @@ const App = () => {
         </div>
       </section>
 
-      {/* The Architecture (Anatomy) - Moved Up */}
-      <section id="manifesto" className="py-24 bg-white/5 border-y border-white/5">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-3xl font-bold mb-6">It's not an app.<br /><span className="text-white">Shop with Friends</span></h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-8">
-                Shop with Friends doesn't take over your platform. It attaches to it like a social spine. It provides the connective tissue that ties two human brains together while they browse your store.
-              </p>
-
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0 border border-blue-500/20">
-                    <Globe size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg text-white">A Shared Brain</h3>
-                    <p className="text-gray-500 text-sm mt-1">One session ID. Two devices. Zero friction. No signups required.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 shrink-0 border border-purple-500/20">
-                    <Zap size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg text-white">The Nervous System</h3>
-                    <p className="text-gray-500 text-sm mt-1">Real-time WebRTC & Websockets sync scrolling, reactions, and voice in milliseconds.</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 shrink-0 border border-green-500/20">
-                    <Code2 size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg text-white">Drop-in Parasite</h3>
-                    <p className="text-gray-500 text-sm mt-1">Snap it into any e-commerce site like a Lego brick. It adapts to the host.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Code Snippet Visual */}
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl opacity-20 blur-lg"></div>
-              <div className="relative bg-[#111] rounded-xl border border-white/10 p-6 shadow-2xl font-mono text-sm">
-                <div className="flex gap-2 mb-4 opacity-50">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
-                <div className="text-gray-400 space-y-2">
-                  <p><span className="text-purple-400">const</span> <span className="text-blue-400">session</span> = <span className="text-purple-400">await</span> spine.<span className="text-yellow-300">connect</span>();</p>
-                  <p className="text-gray-500">// That's it. You are now synced.</p>
-                  <div className="h-4"></div>
-                  <p className="text-gray-500">&lt;!-- Or just drop this in --&gt;</p>
-                  <p>
-                    <span className="text-blue-400">&lt;script</span> <span className="text-purple-400">src</span>=<span className="text-green-400">"https://api.shopwithfriends.io/spine.js"</span><span className="text-blue-400">&gt;&lt;/script&gt;</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* How It Works - Simple */}
       <section className="py-16 md:py-24 px-4 md:px-6">
@@ -624,8 +558,17 @@ const App = () => {
       </section>
 
       {/* Platform Integration - Technical stuff comes AFTER benefits */}
-      <section className="py-16 md:py-20 px-4 md:px-6 bg-white/5 border-y border-white/10">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-16 md:py-20 px-4 md:px-6 bg-white/5 border-y border-white/10 relative overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/images/install-social.png"
+            className="w-full h-full object-cover opacity-20"
+            alt="Social shopping integration"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/90 via-[#0a0a0a]/80 to-[#0a0a0a]/90"></div>
+        </div>
+        <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 md:mb-4">Install in 5 Minutes</h2>
             <p className="text-gray-400 text-base md:text-lg">Works with Shopify, WooCommerce, or any platform. No complicated setup.</p>
@@ -685,7 +628,7 @@ const App = () => {
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600"></div>
+                <img src="/favicon.png" alt="Shop with Friends" className="w-10 h-10" />
                 <span className="font-bold text-lg">Shop with Friends</span>
               </div>
               <p className="text-gray-500 text-sm leading-relaxed">
