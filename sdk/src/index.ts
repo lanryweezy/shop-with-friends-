@@ -182,10 +182,50 @@ export class ShopWithFriends {
     }
 
     /**
+     * Start screen sharing
+     */
+    async startScreenShare(): Promise<MediaStream | void> {
+        if (!this.webrtc) {
+            console.warn('WebRTC not enabled in config');
+            return;
+        }
+        return this.webrtc.startScreenShare();
+    }
+
+    /**
+     * Stop screen sharing
+     */
+    stopScreenShare(): void {
+        this.webrtc?.stopScreenShare();
+    }
+
+    /**
      * Toggle mute
      */
     setMute(muted: boolean): void {
         this.webrtc?.toggleAudio(!muted);
+    }
+
+    /**
+     * Toggle video
+     */
+    setVideo(enabled: boolean): void {
+        this.webrtc?.toggleVideo(enabled);
+    }
+
+    /**
+     * Get audio level for a peer (0-100)
+     */
+    getAudioLevel(peerId: string): number {
+        return this.webrtc?.getAudioLevel(peerId) || 0;
+    }
+
+    /**
+     * Get connection stats for a peer
+     */
+    async getConnectionStats(peerId: string): Promise<any> {
+        if (!this.webrtc) return null;
+        return this.webrtc.getConnectionStats(peerId);
     }
 
     /**
