@@ -68,6 +68,8 @@ export class ShopWithFriends {
 
         this.events = new EventEmitter();
         this.ws = new WebSocketClient(this.config.apiUrl!, this.events);
+        // Pass API key to WebSocket client for session creation
+        (this.ws as any).apiKey = this.config.apiKey;
         this.session = new SessionManager(this.ws, this.events);
 
         // Initialize WebRTC if enabled
@@ -285,6 +287,26 @@ export class ShopWithFriends {
             payload: {
                 eventType: 'REACTION',
                 reaction
+            }
+        });
+    }
+
+    /**
+     * Sync cursor position
+     */
+    syncCursor(x: number, y: number): void {
+        if (!this.currentSessionId) return;
+
+        this.ws.send({
+            type: 'SYNC_EVENT',
+            payload: {
+                eventType: 'CURSOR_MOVE',
+                x,
+                y,
+                pageX: window.scrollX,
+                pageY: window.scrollY,
+                width: window.innerWidth,
+                height: window.innerHeight
             }
         });
     }

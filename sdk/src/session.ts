@@ -38,7 +38,12 @@ export class SessionManager {
             // Send create session message
             this.ws.send({
                 type: 'CREATE_SESSION',
-                payload: { metadata }
+                payload: {
+                    metadata,
+                    // @ts-ignore - apiKey is on the parent sdk which isn't directly here,
+                    // but we can pass it if we update the constructor or just get it from config
+                    apiKey: (this.ws as any).apiKey
+                }
             });
         });
     }

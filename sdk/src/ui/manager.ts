@@ -7,7 +7,9 @@ export class UIManager {
   private container: HTMLDivElement | null = null;
   private dock: HTMLDivElement | null = null;
   private modal: HTMLDivElement | null = null;
+  private cursorsContainer: HTMLDivElement | null = null;
   private participants: Map<string, string> = new Map(); // userId -> userName
+  private remoteCursors: Map<string, HTMLDivElement> = new Map(); // userId -> cursor element
 
   constructor(sdk: ShopWithFriends, config: ShopWithFriendsConfig) {
     this.sdk = sdk;
@@ -19,9 +21,11 @@ export class UIManager {
    */
   render(): void {
     this.createContainer();
+    this.createCursorsContainer();
     this.renderDock();
     this.setupEventListeners();
     this.injectStyles();
+    this.setupMouseTracking();
   }
 
   /**
@@ -95,6 +99,16 @@ export class UIManager {
     this.container = document.createElement('div');
     this.container.className = `swf-container swf-${this.config.position}`;
     document.body.appendChild(this.container);
+  }
+
+  private createCursorsContainer(): void {
+    this.cursorsContainer = document.createElement('div');
+    this.cursorsContainer.className = 'swf-cursors-container';
+    this.cursorsContainer.style.position = 'fixed';
+    this.cursorsContainer.style.inset = '0';
+    this.cursorsContainer.style.pointerEvents = 'none';
+    this.cursorsContainer.style.zIndex = '999998';
+    document.body.appendChild(this.cursorsContainer);
   }
 
   private renderDock(): void {
@@ -265,8 +279,71 @@ export class UIManager {
 
     this.sdk.on('ws:participantLeft', (user: any) => {
       this.participants.delete(user.userId);
+      this.removeRemoteCursor(user.userId);
       this.updateDockContent();
     });
+
+    this.sdk.on('sync:cursor_move', (data: any) => {
+      this.updateRemoteCursor(data.sourceId, data.x, data.y, data.pageX, data.pageY, data.width, data.height);
+    });
+  }
+
+  private setupMouseTracking(): void {
+    let lastSend = 0;
+    const throttle = 50; // ms
+
+    window.addEventListener('mousemove', (e) => {
+      if (!this.sdk.isInSession()) return;
+
+      const now = Date.now();
+      if (now - lastSend > throttle) {
+        this.sdk.syncCursor(e.clientX, e.clientY);
+        lastSend = now;
+      }
+    });
+  }
+
+  private updateRemoteCursor(userId: string, x: number, y: number, pageX: number, pageY: number, width: number, height: number): void {
+    if (!this.cursorsContainer) return;
+
+    let cursor = this.remoteCursors.get(userId);
+    if (!cursor) {
+      cursor = document.createElement('div');
+      cursor.className = 'swf-remote-cursor';
+      cursor.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M5.653 3.123l15.911 8.132a1.146 1.146 0 01.015 2.049l-5.451 2.73-2.73 5.451a1.146 1.146 0 01-2.049-.015L3.123 5.653a1.146 1.146 0 011.53-1.53z"/>
+        </svg>
+        <div class="swf-cursor-label">${this.participants.get(userId) || 'Friend'}</div>
+      `;
+      this.cursorsContainer.appendChild(cursor);
+      this.remoteCursors.set(userId, cursor);
+    }
+
+    // Adjust position based on viewport differences
+    const scaleX = window.innerWidth / width;
+    const scaleY = window.innerHeight / height;
+
+    // For now simple ClientX/Y with scroll compensation if needed
+    // But since it's fixed container, ClientX/Y should work if pages are similar
+    cursor.style.transform = `translate(${x * scaleX}px, ${y * scaleY}px)`;
+
+    // Check if we should update label if it changed
+    const label = cursor.querySelector('.swf-cursor-label');
+    if (label) {
+      const currentName = this.participants.get(userId) || 'Friend';
+      if (label.textContent !== currentName) {
+        label.textContent = currentName;
+      }
+    }
+  }
+
+  private removeRemoteCursor(userId: string): void {
+    const cursor = this.remoteCursors.get(userId);
+    if (cursor) {
+      cursor.remove();
+      this.remoteCursors.delete(userId);
+    }
   }
 
   private injectStyles(): void {
@@ -536,6 +613,29 @@ export class UIManager {
       @keyframes swf-spin { to { transform: rotate(360deg); } }
       
       .swf-hidden { display: none !important; }
+
+      .swf-remote-cursor {
+        position: absolute;
+        top: 0;
+        left: 0;
+        color: #7c3aed;
+        transition: transform 0.1s linear;
+        z-index: 1000;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+      }
+
+      .swf-cursor-label {
+        position: absolute;
+        left: 12px;
+        top: 12px;
+        background: #7c3aed;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
     `;
     document.head.appendChild(style);
   }
