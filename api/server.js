@@ -67,7 +67,7 @@ app.post('/api/sessions/create', async (req, res) => {
         }
 
         // Validate API Key
-        if (apiKey && !VALID_API_KEYS.has(apiKey)) {
+        if (!apiKey || !VALID_API_KEYS.has(apiKey)) {
             return res.status(401).json({ error: 'Invalid API Key' });
         }
 

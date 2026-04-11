@@ -40,9 +40,7 @@ export class SessionManager {
                 type: 'CREATE_SESSION',
                 payload: {
                     metadata,
-                    // @ts-ignore - apiKey is on the parent sdk which isn't directly here,
-                    // but we can pass it if we update the constructor or just get it from config
-                    apiKey: (this.ws as any).apiKey
+                    apiKey: this.ws.apiKey
                 }
             });
         });

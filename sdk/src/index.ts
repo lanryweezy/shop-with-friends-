@@ -69,7 +69,7 @@ export class ShopWithFriends {
         this.events = new EventEmitter();
         this.ws = new WebSocketClient(this.config.apiUrl!, this.events);
         // Pass API key to WebSocket client for session creation
-        (this.ws as any).apiKey = this.config.apiKey;
+        this.ws.apiKey = this.config.apiKey;
         this.session = new SessionManager(this.ws, this.events);
 
         // Initialize WebRTC if enabled

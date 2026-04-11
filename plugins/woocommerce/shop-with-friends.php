@@ -177,9 +177,9 @@ class ShopWithFriends_Plugin {
         // Enqueue SDK
         wp_enqueue_script(
             'shop-with-friends-sdk',
-            'https://unpkg.com/shop-with-friends@1.1.1/dist/shop-with-friends.js',
+            'https://unpkg.com/shop-with-friends@1.1.2/dist/shop-with-friends.js',
             array(),
-            '1.1.1',
+            '1.1.2',
             true
         );
         
@@ -217,7 +217,7 @@ class ShopWithFriends_Plugin {
         
         return <<<JS
 (async function() {
-    const { ShopWithFriends } = await import('https://unpkg.com/shop-with-friends@1.1.1/dist/shop-with-friends.js');
+    const { ShopWithFriends } = await import('https://unpkg.com/shop-with-friends@1.1.2/dist/shop-with-friends.js');
     
     const config = {$config_json};
     

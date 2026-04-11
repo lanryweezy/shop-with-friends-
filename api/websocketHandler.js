@@ -97,7 +97,7 @@ export class WebSocketHandler {
         const { metadata, apiKey } = payload || {};
 
         // Validate API Key
-        if (apiKey && !VALID_API_KEYS.has(apiKey)) {
+        if (!apiKey || !VALID_API_KEYS.has(apiKey)) {
             this.send(ws, {
                 type: 'ERROR',
                 payload: { message: 'Invalid API Key' }

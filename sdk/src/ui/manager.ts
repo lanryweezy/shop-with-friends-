@@ -165,6 +165,13 @@ export class UIManager {
                 <line x1="12" y1="19" x2="12" y2="23"></line>
               </svg>
             </button>
+
+            <button class="swf-control-btn ${this.config.enableVideo ? '' : 'swf-hidden'}" id="swf-video-btn" title="Video Chat">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2z"></path>
+                <path d="m23 7-7 5 7 5"></path>
+              </svg>
+            </button>
             
             <button class="swf-control-btn" id="swf-invite-more-btn" title="Invite More">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -186,6 +193,7 @@ export class UIManager {
 
       // Re-attach listeners
       this.dock.querySelector('#swf-voice-btn')?.addEventListener('click', (e) => this.handleVoiceToggle(e.currentTarget as HTMLButtonElement));
+      this.dock.querySelector('#swf-video-btn')?.addEventListener('click', (e) => this.handleVideoToggle(e.currentTarget as HTMLButtonElement));
       this.dock.querySelector('#swf-invite-more-btn')?.addEventListener('click', () => this.handleInviteClick());
       this.dock.querySelector('#swf-leave-btn')?.addEventListener('click', () => this.handleLeave());
     }
@@ -235,6 +243,23 @@ export class UIManager {
         btn.classList.add('swf-active');
       } catch (e) {
         alert('Could not access microphone');
+      }
+    }
+  }
+
+  private async handleVideoToggle(btn: HTMLButtonElement): Promise<void> {
+    if (btn.classList.contains('swf-active')) {
+      this.sdk.setVideo(false);
+      btn.classList.remove('swf-active');
+      // We don't have a stopVideo but we can toggle it on the stream
+    } else {
+      try {
+        // startVoice handles both audio and video based on config in WebRTCManager
+        await this.sdk.startVoice();
+        this.sdk.setVideo(true);
+        btn.classList.add('swf-active');
+      } catch (e) {
+        alert('Could not access camera');
       }
     }
   }
