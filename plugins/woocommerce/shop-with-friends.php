@@ -3,7 +3,7 @@
  * Plugin Name: Shop with Friends
  * Plugin URI: https://shopwithfriends.io
  * Description: Enable collaborative shopping with real-time sync and voice chat
- * Version: 1.0.0
+ * Version: 1.1.2
  * Author: Street Heart Technologies
  * Author URI: https://shopwithfriends.io
  * License: GPL v2 or later
@@ -60,6 +60,7 @@ class ShopWithFriends_Plugin {
      */
     public function register_settings() {
         register_setting('swf_settings', 'swf_api_key');
+        register_setting('swf_settings', 'swf_api_url');
         register_setting('swf_settings', 'swf_enabled');
         register_setting('swf_settings', 'swf_show_button');
         register_setting('swf_settings', 'swf_enable_voice');
@@ -97,6 +98,14 @@ class ShopWithFriends_Plugin {
                         <td>
                             <input type="text" name="swf_api_key" value="<?php echo esc_attr(get_option('swf_api_key')); ?>" class="regular-text">
                             <p class="description">Get your API key from <a href="https://shopwithfriends.io/dashboard" target="_blank">shopwithfriends.io/dashboard</a></p>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th scope="row">API URL</th>
+                        <td>
+                            <input type="text" name="swf_api_url" value="<?php echo esc_attr(get_option('swf_api_url', 'wss://shop-with-friends-production.up.railway.app')); ?>" class="regular-text">
+                            <p class="description">WebSocket API URL</p>
                         </td>
                     </tr>
                     
@@ -191,7 +200,7 @@ class ShopWithFriends_Plugin {
         
         $config = array(
             'apiKey' => $api_key,
-            'apiUrl' => 'wss://shop-with-friends-production.up.railway.app',
+            'apiUrl' => get_option('swf_api_url', 'wss://shop-with-friends-production.up.railway.app'),
             'showInviteButton' => (bool)get_option('swf_show_button', true),
             'enableVoice' => (bool)get_option('swf_enable_voice', true), // VOICE IS CORE!
             'theme' => get_option('swf_theme', 'dark'),
@@ -250,6 +259,23 @@ class ShopWithFriends_Plugin {
                 if (confirm('Your friend is looking at "' + event.productName + '". View it together?')) {
                     window.location.href = event.url;
                 }
+            }
+
+            if (event.eventType === 'CART_UPDATE' && event.cart) {
+                console.log('Friend updated cart:', event.cart);
+                // Simple notification
+                const toast = document.createElement('div');
+                toast.style.position = 'fixed';
+                toast.style.bottom = '100px';
+                toast.style.right = '20px';
+                toast.style.background = '#333';
+                toast.style.color = 'white';
+                toast.style.padding = '12px 24px';
+                toast.style.borderRadius = '8px';
+                toast.style.zIndex = '1000001';
+                toast.textContent = '🛒 Friend updated their cart!';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
             }
         },
         onError: (error) => {

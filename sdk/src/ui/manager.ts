@@ -281,10 +281,16 @@ export class UIManager {
     }
   }
 
-  private handleLeave(): void {
+  private async handleLeave(): Promise<void> {
     if (confirm('Are you sure you want to leave the shopping session?')) {
-      // this.sdk.leaveSession(); // Assuming SDK has this method, if not we reload
-      window.location.reload();
+      await this.sdk.leaveSession();
+      this.participants.clear();
+      this.remoteCursors.forEach(c => c.remove());
+      this.remoteCursors.clear();
+      this.remoteVideos.forEach(v => v.remove());
+      this.remoteVideos.clear();
+      if (this.videoContainer) this.videoContainer.classList.add('swf-hidden');
+      this.updateDockContent();
     }
   }
 
@@ -411,8 +417,8 @@ export class UIManager {
     const scaleX = window.innerWidth / width;
     const scaleY = window.innerHeight / height;
 
-    // For now simple ClientX/Y with scroll compensation if needed
-    // But since it's fixed container, ClientX/Y should work if pages are similar
+    // Since cursorsContainer is fixed and inset: 0, x and y (clientX/Y)
+    // are relative to the viewport. Scaling handles different screen sizes.
     cursor.style.transform = `translate(${x * scaleX}px, ${y * scaleY}px)`;
 
     // Check if we should update label if it changed

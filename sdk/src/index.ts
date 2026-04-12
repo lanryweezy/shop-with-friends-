@@ -125,7 +125,7 @@ export class ShopWithFriends {
     /**
      * Create a new shopping session
      */
-    async createSession(metadata?: any): Promise<any> {
+    public async createSession(metadata?: any): Promise<any> {
         if (!this.isInitialized) {
             throw new Error('SDK not initialized. Call init() first.');
         }
@@ -143,7 +143,7 @@ export class ShopWithFriends {
     /**
      * Join an existing session
      */
-    async joinSession(sessionId: string, userName?: string): Promise<void> {
+    public async joinSession(sessionId: string, userName?: string): Promise<void> {
         if (!this.isInitialized) {
             throw new Error('SDK not initialized. Call init() first.');
         }
@@ -167,14 +167,25 @@ export class ShopWithFriends {
     /**
      * Leave current session
      */
-    async leaveSession(): Promise<void> {
+    public async leaveSession(): Promise<void> {
         if (!this.currentSessionId) {
             console.warn('Not in a session');
             return;
         }
 
-        await this.session.leave(this.currentSessionId);
-        this.currentSessionId = null;
+        try {
+            await this.session.leave(this.currentSessionId);
+        } catch (error) {
+            console.error('Error leaving session:', error);
+        } finally {
+            this.currentSessionId = null;
+            this.stopVoice();
+            this.stopScreenShare();
+            // Clear peer connections
+            if (this.webrtc) {
+                this.webrtc.stopCall();
+            }
+        }
     }
 
     /**
@@ -193,8 +204,15 @@ export class ShopWithFriends {
     /**
      * Stop voice chat
      */
-    stopVoice(): void {
+    public stopVoice(): void {
         this.webrtc?.stopCall();
+    }
+
+    /**
+     * Stop screen sharing
+     */
+    public stopScreenShare(): void {
+        this.webrtc?.stopScreenShare();
     }
 
     /**
@@ -208,12 +226,6 @@ export class ShopWithFriends {
         return this.webrtc.startScreenShare();
     }
 
-    /**
-     * Stop screen sharing
-     */
-    stopScreenShare(): void {
-        this.webrtc?.stopScreenShare();
-    }
 
     /**
      * Toggle mute
@@ -428,12 +440,40 @@ export class ShopWithFriends {
             if (this.config.onSync) {
                 this.config.onSync(data);
             }
+
+            // Forward specific sync events for UIManager and other listeners
+            if (data.eventType) {
+                this.events.emit(`sync:${data.eventType.toLowerCase()}`, data);
+            }
         });
 
         this.events.on('ws:error', (error: any) => {
             if (this.config.onError) {
                 this.config.onError(error);
             }
+        });
+
+        // Forward WebRTC events
+        const webrtcEvents = [
+            'webrtc:localStream',
+            'webrtc:remoteStream',
+            'webrtc:callStarted',
+            'webrtc:callEnded',
+            'webrtc:peerConnected',
+            'webrtc:peerDisconnected',
+            'webrtc:stats',
+            'webrtc:error',
+            'webrtc:audioLevel',
+            'webrtc:audioToggled',
+            'webrtc:videoToggled'
+        ];
+
+        webrtcEvents.forEach(event => {
+            this.events.on(event, (data: any) => {
+                // Already emitted by WebRTCManager on the same emitter,
+                // but if we ever use separate emitters we'd proxy here.
+                // For now, UIManager already listens to this.sdk which uses this.events.
+            });
         });
     }
 
