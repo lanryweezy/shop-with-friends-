@@ -148,8 +148,20 @@ export class ShopWithFriends {
             throw new Error('SDK not initialized. Call init() first.');
         }
 
-        await this.session.join(sessionId, userName);
+        const session = await this.session.join(sessionId, userName);
         this.currentSessionId = sessionId;
+
+        // Connect to existing participants
+        if (this.webrtc && (this.config.enableVoice || this.config.enableVideo)) {
+            // Wait a bit for the WebSocket connection state to stabilize in the session
+            setTimeout(() => {
+                session.participants.forEach((p: any) => {
+                    if (p.userId !== this.clientId) {
+                        this.webrtc?.connectToPeer(p.userId);
+                    }
+                });
+            }, 1000);
+        }
     }
 
     /**
@@ -168,10 +180,12 @@ export class ShopWithFriends {
     /**
      * Start voice chat
      */
-    async startVoice(): Promise<MediaStream | void> {
+    public async startVoice(): Promise<MediaStream | void> {
         if (!this.webrtc) {
-            console.warn('WebRTC not enabled in config');
-            return;
+            this.webrtc = new WebRTCManager(this.ws, this.events, {
+                enableAudio: true,
+                enableVideo: this.config.enableVideo || false
+            });
         }
         return this.webrtc.startCall();
     }
@@ -211,8 +225,24 @@ export class ShopWithFriends {
     /**
      * Toggle video
      */
-    setVideo(enabled: boolean): void {
-        this.webrtc?.toggleVideo(enabled);
+    public async setVideo(enabled: boolean): Promise<void> {
+        if (!this.webrtc) {
+            this.webrtc = new WebRTCManager(this.ws, this.events, {
+                enableAudio: this.config.enableVoice || true,
+                enableVideo: true
+            });
+        }
+
+        // If enabling video and we don't have a stream yet, start the call
+        if (enabled && !this.webrtc.getAudioLevel('local')) {
+             try {
+                 await this.webrtc.startCall();
+             } catch (e) {
+                 console.error("Failed to start call for video", e);
+             }
+        }
+
+        this.webrtc.toggleVideo(enabled);
     }
 
     /**
@@ -329,14 +359,14 @@ export class ShopWithFriends {
     /**
      * Event listener
      */
-    on(event: string, callback: Function): void {
+    public on(event: string, callback: Function): void {
         this.events.on(event, callback);
     }
 
     /**
      * Remove event listener
      */
-    off(event: string, callback: Function): void {
+    public off(event: string, callback: Function): void {
         this.events.off(event, callback);
     }
 
@@ -357,7 +387,7 @@ export class ShopWithFriends {
     /**
      * Check if in a session
      */
-    isInSession(): boolean {
+    public isInSession(): boolean {
         return this.currentSessionId !== null;
     }
 
@@ -378,6 +408,11 @@ export class ShopWithFriends {
     private setupEventHandlers(): void {
         // Forward WebSocket events to SDK events
         this.events.on('ws:participantJoined', (data: any) => {
+            // Automatically connect to the new peer via WebRTC if enabled
+            if (this.webrtc && (this.config.enableVoice || this.config.enableVideo)) {
+                this.webrtc.connectToPeer(data.userId);
+            }
+
             if (this.config.onParticipantJoined) {
                 this.config.onParticipantJoined(data);
             }

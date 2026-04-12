@@ -8,8 +8,10 @@ export class UIManager {
   private dock: HTMLDivElement | null = null;
   private modal: HTMLDivElement | null = null;
   private cursorsContainer: HTMLDivElement | null = null;
+  private videoContainer: HTMLDivElement | null = null;
   private participants: Map<string, string> = new Map(); // userId -> userName
   private remoteCursors: Map<string, HTMLDivElement> = new Map(); // userId -> cursor element
+  private remoteVideos: Map<string, HTMLVideoElement> = new Map(); // userId -> video element
 
   constructor(sdk: ShopWithFriends, config: ShopWithFriendsConfig) {
     this.sdk = sdk;
@@ -22,6 +24,7 @@ export class UIManager {
   render(): void {
     this.createContainer();
     this.createCursorsContainer();
+    this.createVideoContainer();
     this.renderDock();
     this.setupEventListeners();
     this.injectStyles();
@@ -109,6 +112,23 @@ export class UIManager {
     this.cursorsContainer.style.pointerEvents = 'none';
     this.cursorsContainer.style.zIndex = '999998';
     document.body.appendChild(this.cursorsContainer);
+  }
+
+  private createVideoContainer(): void {
+    this.videoContainer = document.createElement('div');
+    this.videoContainer.className = 'swf-video-container swf-hidden';
+    this.videoContainer.innerHTML = `
+        <div class="swf-video-header">
+            <span>Video Chat</span>
+            <button class="swf-video-minimize" id="swf-video-min-btn">&minus;</button>
+        </div>
+        <div class="swf-video-grid"></div>
+    `;
+    this.container?.appendChild(this.videoContainer);
+
+    this.videoContainer.querySelector('#swf-video-min-btn')?.addEventListener('click', () => {
+        this.videoContainer?.classList.toggle('swf-minimized');
+    });
   }
 
   private renderDock(): void {
@@ -249,14 +269,11 @@ export class UIManager {
 
   private async handleVideoToggle(btn: HTMLButtonElement): Promise<void> {
     if (btn.classList.contains('swf-active')) {
-      this.sdk.setVideo(false);
+      await this.sdk.setVideo(false);
       btn.classList.remove('swf-active');
-      // We don't have a stopVideo but we can toggle it on the stream
     } else {
       try {
-        // startVoice handles both audio and video based on config in WebRTCManager
-        await this.sdk.startVoice();
-        this.sdk.setVideo(true);
+        await this.sdk.setVideo(true);
         btn.classList.add('swf-active');
       } catch (e) {
         alert('Could not access camera');
@@ -311,6 +328,51 @@ export class UIManager {
     this.sdk.on('sync:cursor_move', (data: any) => {
       this.updateRemoteCursor(data.sourceId, data.x, data.y, data.pageX, data.pageY, data.width, data.height);
     });
+
+    this.sdk.on('webrtc:remoteStream', (data: any) => {
+      this.addRemoteVideo(data.peerId, data.stream);
+    });
+
+    this.sdk.on('webrtc:peerDisconnected', (peerId: string) => {
+      this.removeRemoteVideo(peerId);
+    });
+
+    this.sdk.on('webrtc:videoToggled', (data: any) => {
+        if (data.enabled) {
+            this.videoContainer?.classList.remove('swf-hidden');
+        } else if (this.remoteVideos.size === 0) {
+            this.videoContainer?.classList.add('swf-hidden');
+        }
+    });
+  }
+
+  private addRemoteVideo(peerId: string, stream: MediaStream): void {
+    if (!this.videoContainer) return;
+    this.videoContainer.classList.remove('swf-hidden');
+    const grid = this.videoContainer.querySelector('.swf-video-grid');
+    if (!grid) return;
+
+    let video = this.remoteVideos.get(peerId);
+    if (!video) {
+        video = document.createElement('video');
+        video.className = 'swf-remote-video';
+        video.autoplay = true;
+        video.playsInline = true;
+        grid.appendChild(video);
+        this.remoteVideos.set(peerId, video);
+    }
+    video.srcObject = stream;
+  }
+
+  private removeRemoteVideo(peerId: string): void {
+    const video = this.remoteVideos.get(peerId);
+    if (video) {
+        video.remove();
+        this.remoteVideos.delete(peerId);
+    }
+    if (this.remoteVideos.size === 0) {
+        this.videoContainer?.classList.add('swf-hidden');
+    }
   }
 
   private setupMouseTracking(): void {
@@ -660,6 +722,69 @@ export class UIManager {
         font-size: 10px;
         font-weight: 600;
         white-space: nowrap;
+      }
+
+      .swf-video-container {
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 180px;
+        background: rgba(15, 15, 15, 0.9);
+        backdrop-filter: blur(12px);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .swf-video-container.swf-minimized {
+        height: 40px;
+        width: 120px;
+      }
+
+      .swf-video-container.swf-minimized .swf-video-grid {
+        display: none;
+      }
+
+      .swf-video-header {
+        padding: 8px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(255,255,255,0.6);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+      }
+
+      .swf-video-minimize {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 0 4px;
+      }
+
+      .swf-video-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .swf-remote-video {
+        width: 100%;
+        height: 110px;
+        background: #000;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 1px solid rgba(255,255,255,0.1);
       }
     `;
     document.head.appendChild(style);
