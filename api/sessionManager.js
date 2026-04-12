@@ -52,6 +52,9 @@ class SessionManager {
             expiresAt: Date.now() + (this.SESSION_TTL * 1000)
         };
 
+        // Basic Analytics
+        console.log(`[ANALYTICS] Session Created: ${sessionId} | Host: ${hostUserId} | Key: ${metadata.apiKey || 'none'}`);
+
         if (this.useRedis) {
             // Store in Redis
             await this.redis.setex(
@@ -93,6 +96,9 @@ class SessionManager {
 
         session.participants.push(userId);
 
+        // Basic Analytics
+        console.log(`[ANALYTICS] Participant Joined: ${sessionId} | User: ${userId} | Name: ${userName || 'Anonymous'}`);
+
         if (this.useRedis) {
             await this.redis.setex(
                 `session:${sessionId}`,
@@ -127,22 +133,31 @@ class SessionManager {
 
         session.participants = session.participants.filter(p => p !== userId);
 
-        if (session.participants.length === 0) {
-            await this.deleteSession(sessionId);
+        // Update state
+        if (this.useRedis) {
+            await this.redis.setex(
+                `session:${sessionId}`,
+                this.SESSION_TTL,
+                JSON.stringify(session)
+            );
+            await this.redis.srem(`session:${sessionId}:participants`, userId);
+            await this.redis.hdel(`session:${sessionId}:users`, userId);
         } else {
-            if (this.useRedis) {
-                await this.redis.setex(
-                    `session:${sessionId}`,
-                    this.SESSION_TTL,
-                    JSON.stringify(session)
-                );
-                await this.redis.srem(`session:${sessionId}:participants`, userId);
-                await this.redis.hdel(`session:${sessionId}:users`, userId);
-            } else {
-                this.sessions.set(sessionId, session);
-                this.participants.get(sessionId)?.delete(userId);
-                this.userNames.delete(`${sessionId}_${userId}`);
-            }
+            this.sessions.set(sessionId, session);
+            this.participants.get(sessionId)?.delete(userId);
+            this.userNames.delete(`${sessionId}_${userId}`);
+        }
+
+        if (session.participants.length === 0) {
+            // Grace period for deletion to handle reloads
+            const gracePeriod = 30000; // 30 seconds
+            setTimeout(async () => {
+                const s = await this.getSession(sessionId);
+                const participants = await this.getParticipants(sessionId);
+                if (s && participants.length === 0) {
+                    await this.deleteSession(sessionId);
+                }
+            }, gracePeriod);
         }
 
         console.log(`👋 User ${userId} left session ${sessionId}`);
@@ -172,6 +187,12 @@ class SessionManager {
      * Delete session
      */
     async deleteSession(sessionId) {
+        const session = await this.getSession(sessionId);
+        if (session) {
+            const duration = Math.round((Date.now() - session.createdAt) / 1000);
+            console.log(`[ANALYTICS] Session Ended: ${sessionId} | Duration: ${duration}s`);
+        }
+
         if (this.useRedis) {
             await this.redis.del(`session:${sessionId}`);
             await this.redis.del(`session:${sessionId}:participants`);

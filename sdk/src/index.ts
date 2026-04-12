@@ -106,7 +106,7 @@ export class ShopWithFriends {
             this.isInitialized = true;
             console.log('✅ Shop with Friends SDK initialized');
 
-            // Check if we should auto-join from URL
+            // Check if we should auto-join from URL or restore session
             this.checkAutoJoin();
 
             // Render UI if enabled
@@ -133,6 +133,11 @@ export class ShopWithFriends {
         const session = await this.session.create(metadata);
         this.currentSessionId = session.sessionId;
 
+        // Persist session
+        if (this.currentSessionId) {
+            localStorage.setItem('swf_session_id', this.currentSessionId);
+        }
+
         if (this.config.onSessionCreated) {
             this.config.onSessionCreated(session);
         }
@@ -151,16 +156,17 @@ export class ShopWithFriends {
         const session = await this.session.join(sessionId, userName);
         this.currentSessionId = sessionId;
 
+        // Persist session
+        localStorage.setItem('swf_session_id', sessionId);
+        if (userName) localStorage.setItem('swf_user_name', userName);
+
         // Connect to existing participants
         if (this.webrtc && (this.config.enableVoice || this.config.enableVideo)) {
-            // Wait a bit for the WebSocket connection state to stabilize in the session
-            setTimeout(() => {
-                session.participants.forEach((p: any) => {
-                    if (p.userId !== this.clientId) {
-                        this.webrtc?.connectToPeer(p.userId);
-                    }
-                });
-            }, 1000);
+            session.participants.forEach((p: any) => {
+                if (p.userId !== this.clientId) {
+                    this.webrtc?.connectToPeer(p.userId);
+                }
+            });
         }
     }
 
@@ -179,6 +185,8 @@ export class ShopWithFriends {
             console.error('Error leaving session:', error);
         } finally {
             this.currentSessionId = null;
+            localStorage.removeItem('swf_session_id');
+            localStorage.removeItem('swf_user_name');
             this.stopVoice();
             this.stopScreenShare();
             // Clear peer connections
@@ -316,6 +324,24 @@ export class ShopWithFriends {
     }
 
     /**
+     * Send a chat message
+     */
+    public sendChatMessage(message: string): void {
+        if (!this.currentSessionId) {
+            console.warn('Not in a session');
+            return;
+        }
+
+        this.ws.send({
+            type: 'SYNC_EVENT',
+            payload: {
+                eventType: 'CHAT_MESSAGE',
+                message
+            }
+        });
+    }
+
+    /**
      * Send a reaction
      */
     sendReaction(reaction: string): void {
@@ -356,14 +382,19 @@ export class ShopWithFriends {
     /**
      * Request scroll sync
      */
-    syncScroll(scrollTop: number): void {
+    public syncScroll(scrollTop: number, scrollLeft: number = 0): void {
         if (!this.currentSessionId) return;
 
         this.ws.send({
             type: 'SYNC_EVENT',
             payload: {
                 eventType: 'SCROLL_REQUEST',
-                scrollTop
+                scrollTop,
+                scrollLeft,
+                docHeight: document.documentElement.scrollHeight,
+                docWidth: document.documentElement.scrollWidth,
+                viewHeight: window.innerHeight,
+                viewWidth: window.innerWidth
             }
         });
     }
@@ -483,8 +514,23 @@ export class ShopWithFriends {
         const sessionId = params.get('join');
 
         if (sessionId) {
-            console.log('Auto-joining session from URL:', sessionId);
-            this.joinSession(sessionId);
+            console.log('Found session ID in URL:', sessionId);
+            if (this.ui) {
+                this.ui.showJoinModal(sessionId);
+            } else {
+                this.joinSession(sessionId);
+            }
+            return;
+        }
+
+        // Check for persisted session
+        const persistedSessionId = localStorage.getItem('swf_session_id');
+        if (persistedSessionId) {
+            console.log('Restoring persisted session:', persistedSessionId);
+            const userName = localStorage.getItem('swf_user_name');
+            this.joinSession(persistedSessionId, userName || undefined).catch(() => {
+                localStorage.removeItem('swf_session_id');
+            });
         }
     }
 }

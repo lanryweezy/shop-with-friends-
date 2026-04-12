@@ -9,6 +9,9 @@ export class UIManager {
   private modal: HTMLDivElement | null = null;
   private cursorsContainer: HTMLDivElement | null = null;
   private videoContainer: HTMLDivElement | null = null;
+  private chatContainer: HTMLDivElement | null = null;
+  private toastContainer: HTMLDivElement | null = null;
+  private isFollowing: boolean = false;
   private participants: Map<string, string> = new Map(); // userId -> userName
   private remoteCursors: Map<string, HTMLDivElement> = new Map(); // userId -> cursor element
   private remoteVideos: Map<string, HTMLVideoElement> = new Map(); // userId -> video element
@@ -25,10 +28,13 @@ export class UIManager {
     this.createContainer();
     this.createCursorsContainer();
     this.createVideoContainer();
+    this.createChatContainer();
+    this.createToastContainer();
     this.renderDock();
     this.setupEventListeners();
     this.injectStyles();
     this.setupMouseTracking();
+    this.setupScrollTracking();
   }
 
   /**
@@ -91,6 +97,60 @@ export class UIManager {
     });
   }
 
+  /**
+   * Show join session modal
+   */
+  showJoinModal(sessionId: string): void {
+    if (this.modal) this.modal.remove();
+
+    this.modal = document.createElement('div');
+    this.modal.className = 'swf-modal';
+    this.modal.innerHTML = `
+      <div class="swf-modal-overlay"></div>
+      <div class="swf-modal-content">
+        <div class="swf-modal-header">
+          <div class="swf-modal-icon">👋</div>
+          <h3>Join Friend</h3>
+        </div>
+        <p>Your friend invited you to shop together! Enter your name to join:</p>
+
+        <div class="swf-join-container">
+          <input type="text" placeholder="Your Name" class="swf-name-input" id="swf-name-input" />
+          <button class="swf-join-btn" id="swf-join-btn">Join Session</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(this.modal);
+
+    const joinBtn = this.modal.querySelector('#swf-join-btn') as HTMLButtonElement;
+    const nameInput = this.modal.querySelector('#swf-name-input') as HTMLInputElement;
+
+    const handleJoin = async () => {
+        const name = nameInput.value.trim() || 'Friend';
+        joinBtn.disabled = true;
+        joinBtn.innerHTML = '<span class="swf-spinner"></span> Joining...';
+
+        try {
+            await this.sdk.joinSession(sessionId, name);
+            this.modal?.remove();
+            this.modal = null;
+            this.updateDockContent();
+        } catch (error) {
+            alert('Failed to join session');
+            joinBtn.disabled = false;
+            joinBtn.textContent = 'Join Session';
+        }
+    };
+
+    joinBtn.addEventListener('click', handleJoin);
+    nameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleJoin();
+    });
+
+    nameInput.focus();
+  }
+
   destroy(): void {
     this.container?.remove();
     this.modal?.remove();
@@ -112,6 +172,46 @@ export class UIManager {
     this.cursorsContainer.style.pointerEvents = 'none';
     this.cursorsContainer.style.zIndex = '999998';
     document.body.appendChild(this.cursorsContainer);
+  }
+
+  private createToastContainer(): void {
+      this.toastContainer = document.createElement('div');
+      this.toastContainer.className = 'swf-toast-container';
+      document.body.appendChild(this.toastContainer);
+  }
+
+  private createChatContainer(): void {
+    this.chatContainer = document.createElement('div');
+    this.chatContainer.className = 'swf-chat-container swf-hidden';
+    this.chatContainer.innerHTML = `
+        <div class="swf-chat-header">
+            <span>Chat</span>
+            <button class="swf-chat-close" id="swf-chat-close-btn">&times;</button>
+        </div>
+        <div class="swf-chat-messages" id="swf-chat-messages"></div>
+        <div class="swf-chat-input-container">
+            <input type="text" placeholder="Type a message..." class="swf-chat-input" id="swf-chat-input" />
+        </div>
+    `;
+    this.container?.appendChild(this.chatContainer);
+
+    const input = this.chatContainer.querySelector('#swf-chat-input') as HTMLInputElement;
+    const sendMsg = () => {
+        const text = input.value.trim();
+        if (text) {
+            this.sdk.sendChatMessage(text);
+            this.addChatMessage('Me', text, true);
+            input.value = '';
+        }
+    };
+
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMsg();
+    });
+
+    this.chatContainer.querySelector('#swf-chat-close-btn')?.addEventListener('click', () => {
+        this.chatContainer?.classList.add('swf-hidden');
+    });
   }
 
   private createVideoContainer(): void {
@@ -193,6 +293,19 @@ export class UIManager {
               </svg>
             </button>
             
+            <button class="swf-control-btn" id="swf-chat-btn" title="Chat">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </button>
+
+            <button class="swf-control-btn" id="swf-follow-btn" title="Follow Friend">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+
             <button class="swf-control-btn" id="swf-invite-more-btn" title="Invite More">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -214,6 +327,23 @@ export class UIManager {
       // Re-attach listeners
       this.dock.querySelector('#swf-voice-btn')?.addEventListener('click', (e) => this.handleVoiceToggle(e.currentTarget as HTMLButtonElement));
       this.dock.querySelector('#swf-video-btn')?.addEventListener('click', (e) => this.handleVideoToggle(e.currentTarget as HTMLButtonElement));
+      this.dock.querySelector('#swf-chat-btn')?.addEventListener('click', () => {
+          this.chatContainer?.classList.toggle('swf-hidden');
+          if (!this.chatContainer?.classList.contains('swf-hidden')) {
+              (this.chatContainer?.querySelector('#swf-chat-input') as HTMLInputElement)?.focus();
+          }
+      });
+      this.dock.querySelector('#swf-follow-btn')?.addEventListener('click', (e) => {
+          this.isFollowing = !this.isFollowing;
+          const btn = e.currentTarget as HTMLButtonElement;
+          if (this.isFollowing) {
+              btn.classList.add('swf-active');
+              this.showToast('👀 Now following friend\'s view');
+          } else {
+              btn.classList.remove('swf-active');
+              this.showToast('Stopped following');
+          }
+      });
       this.dock.querySelector('#swf-invite-more-btn')?.addEventListener('click', () => this.handleInviteClick());
       this.dock.querySelector('#swf-leave-btn')?.addEventListener('click', () => this.handleLeave());
     }
@@ -350,6 +480,105 @@ export class UIManager {
             this.videoContainer?.classList.add('swf-hidden');
         }
     });
+
+    this.sdk.on('sync:chat_message', (data: any) => {
+        const name = this.participants.get(data.sourceId) || 'Friend';
+        this.addChatMessage(name, data.message, false);
+        this.chatContainer?.classList.remove('swf-hidden');
+    });
+
+    this.sdk.on('sync:scroll_request', (data: any) => {
+        if (this.isFollowing) {
+            this.handleRemoteScroll(data);
+        }
+    });
+
+    this.sdk.on('sync:navigate', (data: any) => {
+        const name = this.participants.get(data.sourceId) || 'Friend';
+        if (this.isFollowing && data.url && data.url !== window.location.href) {
+            window.location.href = data.url;
+        } else {
+            this.showJumpToast(name, data);
+        }
+    });
+
+    this.sdk.on('sync:cart_update', (data: any) => {
+        this.showToast('🛒 Friend updated their cart');
+    });
+
+    this.sdk.on('sync:reaction', (data: any) => {
+        // Reaction logic is handled in App.tsx for the demo,
+        // but SDK can also show a small toast
+    });
+  }
+
+  private showToast(message: string): void {
+      if (!this.toastContainer) return;
+      const toast = document.createElement('div');
+      toast.className = 'swf-toast';
+      toast.textContent = message;
+      this.toastContainer.appendChild(toast);
+      setTimeout(() => {
+          toast.classList.add('swf-toast-out');
+          setTimeout(() => toast.remove(), 500);
+      }, 3000);
+  }
+
+  private showJumpToast(sender: string, data: any): void {
+      if (!this.toastContainer) return;
+      const toast = document.createElement('div');
+      toast.className = 'swf-toast swf-toast-jump';
+      toast.innerHTML = `
+          <span>${sender} is viewing <strong>${data.productName || 'another product'}</strong></span>
+          <button class="swf-jump-btn">Jump to them</button>
+      `;
+      this.toastContainer.appendChild(toast);
+
+      toast.querySelector('.swf-jump-btn')?.addEventListener('click', () => {
+          if (data.url) window.location.href = data.url;
+      });
+
+      setTimeout(() => {
+          toast.classList.add('swf-toast-out');
+          setTimeout(() => toast.remove(), 500);
+      }, 8000);
+  }
+
+  private handleRemoteScroll(data: any): void {
+      // Logic to sync scroll position
+      // We use a flag to prevent feedback loops
+      (window as any).swf_handling_remote_scroll = true;
+
+      // Proportional scroll if document heights differ
+      const myHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const peerHeight = data.docHeight - data.viewHeight;
+
+      const ratio = (peerHeight > 0 && myHeight > 0) ? myHeight / peerHeight : 1;
+      const targetY = data.scrollTop * ratio;
+
+      window.scrollTo({
+          top: targetY,
+          left: data.scrollLeft,
+          behavior: 'auto'
+      });
+
+      setTimeout(() => {
+          (window as any).swf_handling_remote_scroll = false;
+      }, 150);
+  }
+
+  private addChatMessage(sender: string, text: string, isSelf: boolean): void {
+    const messages = this.chatContainer?.querySelector('#swf-chat-messages');
+    if (messages) {
+        const div = document.createElement('div');
+        div.className = `swf-chat-message ${isSelf ? 'swf-chat-self' : ''}`;
+        div.innerHTML = `
+            <div class="swf-chat-sender">${sender}</div>
+            <div class="swf-chat-text">${text}</div>
+        `;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
   }
 
   private addRemoteVideo(peerId: string, stream: MediaStream): void {
@@ -394,6 +623,24 @@ export class UIManager {
         lastSend = now;
       }
     });
+  }
+
+  private setupScrollTracking(): void {
+      let lastSend = 0;
+      const throttle = 100; // ms
+
+      window.addEventListener('scroll', () => {
+          if (!this.sdk.isInSession()) return;
+
+          // Don't sync if we are currently handling a remote scroll
+          if ((window as any).swf_handling_remote_scroll) return;
+
+          const now = Date.now();
+          if (now - lastSend > throttle) {
+              this.sdk.syncScroll(window.scrollY, window.scrollX);
+              lastSend = now;
+          }
+      }, { passive: true });
   }
 
   private updateRemoteCursor(userId: string, x: number, y: number, pageX: number, pageY: number, width: number, height: number): void {
@@ -631,6 +878,38 @@ export class UIManager {
         color: #374151;
       }
 
+      .swf-join-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .swf-name-input {
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px;
+        font-size: 16px;
+        color: #111;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .swf-name-input:focus { border-color: #7c3aed; }
+
+      .swf-join-btn {
+        background: #7c3aed;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 12px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .swf-join-btn:hover { background: #6d28d9; transform: translateY(-1px); }
+      .swf-join-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
       .swf-copy-btn {
         background: #111;
         color: white;
@@ -791,6 +1070,146 @@ export class UIManager {
         border-radius: 10px;
         object-fit: cover;
         border: 1px solid rgba(255,255,255,0.1);
+      }
+
+      /* --- CHAT --- */
+      .swf-chat-container {
+        position: absolute;
+        bottom: 80px;
+        right: 200px;
+        width: 280px;
+        height: 350px;
+        background: white;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+      }
+
+      .swf-chat-header {
+        padding: 12px 16px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 700;
+        color: #111;
+      }
+
+      .swf-chat-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: #9ca3af;
+        cursor: pointer;
+      }
+
+      .swf-chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .swf-chat-message {
+        align-self: flex-start;
+        max-width: 80%;
+      }
+      .swf-chat-self { align-self: flex-end; }
+
+      .swf-chat-sender {
+        font-size: 10px;
+        font-weight: 700;
+        color: #6b7280;
+        margin-bottom: 2px;
+        margin-left: 4px;
+      }
+      .swf-chat-self .swf-chat-sender { text-align: right; margin-right: 4px; }
+
+      .swf-chat-text {
+        background: #f3f4f6;
+        padding: 8px 12px;
+        border-radius: 14px;
+        font-size: 13px;
+        color: #111;
+        line-height: 1.4;
+      }
+      .swf-chat-self .swf-chat-text { background: #7c3aed; color: white; }
+
+      .swf-chat-input-container {
+        padding: 12px;
+        border-top: 1px solid #e5e7eb;
+      }
+
+      .swf-chat-input {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 13px;
+        outline: none;
+      }
+      .swf-chat-input:focus { border-color: #7c3aed; }
+
+      /* --- TOASTS --- */
+      .swf-toast-container {
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 1000002;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+      }
+
+      .swf-toast {
+        background: #111;
+        color: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        animation: swf-toast-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        pointer-events: auto;
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+
+      .swf-toast-jump {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          background: #7c3aed;
+      }
+
+      .swf-jump-btn {
+          background: white;
+          color: #7c3aed;
+          border: none;
+          padding: 4px 10px;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+      }
+
+      .swf-toast-out {
+          animation: swf-toast-out 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      @keyframes swf-toast-in {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes swf-toast-out {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
       }
     `;
     document.head.appendChild(style);
