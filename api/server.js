@@ -18,6 +18,9 @@ const wsHandler = new WebSocketHandler(sessionManager);
 // Middleware
 app.use(express.json());
 
+// API Keys for mass adoption (demo mode uses any key)
+const VALID_API_KEYS = new Set(process.env.API_KEYS?.split(',') || ['demo-key-123']);
+
 // CORS configuration
 const corsOrigins = process.env.CORS_ORIGINS?.split(',') || [
     'http://localhost:3000',
@@ -57,15 +60,21 @@ app.get('/health', (req, res) => {
  */
 app.post('/api/sessions/create', async (req, res) => {
     try {
-        const { userId, userName, metadata } = req.body;
+        const { userId, userName, metadata, apiKey } = req.body;
 
         if (!userId) {
             return res.status(400).json({ error: 'userId is required' });
         }
 
+        // Validate API Key
+        if (!apiKey || !VALID_API_KEYS.has(apiKey)) {
+            return res.status(401).json({ error: 'Invalid API Key' });
+        }
+
         const session = await sessionManager.createSession(userId, {
             ...metadata,
-            hostName: userName
+            hostName: userName,
+            apiKey: apiKey || 'demo'
         });
 
         const inviteLink = sessionManager.generateInviteLink(session.id);
