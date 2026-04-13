@@ -10,6 +10,7 @@ export class UIManager {
   private cursorsContainer: HTMLDivElement | null = null;
   private videoContainer: HTMLDivElement | null = null;
   private chatContainer: HTMLDivElement | null = null;
+  private cartContainer: HTMLDivElement | null = null;
   private toastContainer: HTMLDivElement | null = null;
   private isFollowing: boolean = false;
   private participants: Map<string, string> = new Map(); // userId -> userName
@@ -29,6 +30,7 @@ export class UIManager {
     this.createCursorsContainer();
     this.createVideoContainer();
     this.createChatContainer();
+    this.createCartContainer();
     this.createToastContainer();
     this.renderDock();
     this.setupEventListeners();
@@ -160,7 +162,7 @@ export class UIManager {
 
   private createContainer(): void {
     this.container = document.createElement('div');
-    this.container.className = `swf-container swf-${this.config.position}`;
+    this.container.className = `swf-container swf-${this.config.position} swf-theme-${this.config.theme || 'dark'}`;
     document.body.appendChild(this.container);
   }
 
@@ -178,6 +180,25 @@ export class UIManager {
       this.toastContainer = document.createElement('div');
       this.toastContainer.className = 'swf-toast-container';
       document.body.appendChild(this.toastContainer);
+  }
+
+  private createCartContainer(): void {
+      this.cartContainer = document.createElement('div');
+      this.cartContainer.className = 'swf-cart-container swf-hidden';
+      this.cartContainer.innerHTML = `
+          <div class="swf-cart-header">
+              <span>Shared Cart</span>
+              <button class="swf-cart-close" id="swf-cart-close-btn">&times;</button>
+          </div>
+          <div class="swf-cart-items" id="swf-cart-items">
+              <div class="swf-cart-empty">Your friend's cart is empty</div>
+          </div>
+      `;
+      this.container?.appendChild(this.cartContainer);
+
+      this.cartContainer.querySelector('#swf-cart-close-btn')?.addEventListener('click', () => {
+          this.cartContainer?.classList.add('swf-hidden');
+      });
   }
 
   private createChatContainer(): void {
@@ -299,6 +320,14 @@ export class UIManager {
               </svg>
             </button>
 
+            <button class="swf-control-btn" id="swf-cart-btn" title="Shared Cart">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+            </button>
+
             <button class="swf-control-btn" id="swf-follow-btn" title="Follow Friend">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -327,6 +356,9 @@ export class UIManager {
       // Re-attach listeners
       this.dock.querySelector('#swf-voice-btn')?.addEventListener('click', (e) => this.handleVoiceToggle(e.currentTarget as HTMLButtonElement));
       this.dock.querySelector('#swf-video-btn')?.addEventListener('click', (e) => this.handleVideoToggle(e.currentTarget as HTMLButtonElement));
+      this.dock.querySelector('#swf-cart-btn')?.addEventListener('click', () => {
+          this.cartContainer?.classList.toggle('swf-hidden');
+      });
       this.dock.querySelector('#swf-chat-btn')?.addEventListener('click', () => {
           this.chatContainer?.classList.toggle('swf-hidden');
           if (!this.chatContainer?.classList.contains('swf-hidden')) {
@@ -504,11 +536,11 @@ export class UIManager {
 
     this.sdk.on('sync:cart_update', (data: any) => {
         this.showToast('🛒 Friend updated their cart');
+        this.updateCartUI(data.cart);
     });
 
     this.sdk.on('sync:reaction', (data: any) => {
-        // Reaction logic is handled in App.tsx for the demo,
-        // but SDK can also show a small toast
+        this.showFloatingReaction(data.reaction);
     });
   }
 
@@ -544,6 +576,32 @@ export class UIManager {
       }, 8000);
   }
 
+  private showFloatingReaction(type: string): void {
+      const emojiMap: Record<string, string> = {
+          heart: '❤️',
+          fire: '🔥',
+          laugh: '😂',
+          shock: '😱'
+      };
+
+      const emoji = emojiMap[type] || '❤️';
+      const container = document.createElement('div');
+      container.className = 'swf-floating-reaction';
+      container.textContent = emoji;
+
+      // Randomize animation properties
+      const spreadX = Math.floor(Math.random() * 200) - 100;
+      const rotate = Math.floor(Math.random() * 60) - 30;
+
+      container.style.setProperty('--spread-x', `${spreadX}px`);
+      container.style.setProperty('--rotate', `${rotate}deg`);
+
+      // Mount to container and animate
+      this.container?.appendChild(container);
+
+      setTimeout(() => container.remove(), 2500);
+  }
+
   private handleRemoteScroll(data: any): void {
       // Logic to sync scroll position
       // We use a flag to prevent feedback loops
@@ -565,6 +623,25 @@ export class UIManager {
       setTimeout(() => {
           (window as any).swf_handling_remote_scroll = false;
       }, 150);
+  }
+
+  private updateCartUI(cart: any[]): void {
+      const itemsContainer = this.cartContainer?.querySelector('#swf-cart-items');
+      if (!itemsContainer) return;
+
+      if (!cart || cart.length === 0) {
+          itemsContainer.innerHTML = '<div class="swf-cart-empty">Your friend\'s cart is empty</div>';
+          return;
+      }
+
+      itemsContainer.innerHTML = cart.map(item => `
+          <div class="swf-cart-item">
+              <div class="swf-item-details">
+                  <div class="swf-item-name">${item.name || 'Product'}</div>
+                  <div class="swf-item-meta">${item.quantity || 1} x ${item.price || 'Price'}</div>
+              </div>
+          </div>
+      `).join('');
   }
 
   private addChatMessage(sender: string, text: string, isSelf: boolean): void {
@@ -775,7 +852,7 @@ export class UIManager {
       }
       
       .swf-avatar:first-child { margin-left: 0; }
-      .swf-avatar-self { background: #111; color: white; border-color: #111; z-index: 2; }
+      .swf-avatar-self { background: #7c3aed; color: white; border-color: #7c3aed; z-index: 2; }
 
       .swf-divider {
         width: 1px;
@@ -1072,6 +1149,44 @@ export class UIManager {
         border: 1px solid rgba(255,255,255,0.1);
       }
 
+      /* --- THEME SUPPORT --- */
+      .swf-theme-light .swf-chat-container,
+      .swf-theme-light .swf-cart-container {
+          background: white;
+          color: #111;
+          border-color: #e5e7eb;
+      }
+      .swf-theme-dark .swf-chat-container,
+      .swf-theme-dark .swf-cart-container {
+          background: #1a1a1a;
+          color: white;
+          border-color: rgba(255,255,255,0.1);
+      }
+
+      .swf-theme-dark .swf-chat-header,
+      .swf-theme-dark .swf-cart-header {
+          background: #242424;
+          border-color: rgba(255,255,255,0.1);
+          color: white;
+      }
+
+      .swf-theme-dark .swf-chat-text {
+          background: #333;
+          color: white;
+      }
+      .swf-theme-dark .swf-cart-item {
+          background: #242424;
+          border-color: rgba(255,255,255,0.05);
+      }
+      .swf-theme-dark .swf-item-name { color: white; }
+      .swf-theme-dark .swf-item-meta { color: rgba(255,255,255,0.5); }
+      .swf-theme-dark .swf-chat-input,
+      .swf-theme-dark .swf-name-input {
+          background: #242424;
+          border-color: rgba(255,255,255,0.1);
+          color: white;
+      }
+
       /* --- CHAT --- */
       .swf-chat-container {
         position: absolute;
@@ -1079,7 +1194,6 @@ export class UIManager {
         right: 200px;
         width: 280px;
         height: 350px;
-        background: white;
         border-radius: 16px;
         display: flex;
         flex-direction: column;
@@ -1090,13 +1204,10 @@ export class UIManager {
 
       .swf-chat-header {
         padding: 12px 16px;
-        background: #f9fafb;
-        border-bottom: 1px solid #e5e7eb;
         display: flex;
         justify-content: space-between;
         align-items: center;
         font-weight: 700;
-        color: #111;
       }
 
       .swf-chat-close {
@@ -1207,9 +1318,101 @@ export class UIManager {
           from { transform: translateX(100%); opacity: 0; }
           to { transform: translateX(0); opacity: 1; }
       }
+      /* --- CART --- */
+      .swf-cart-container {
+        position: absolute;
+        bottom: 80px;
+        right: 0;
+        width: 300px;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.2);
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        max-height: 400px;
+      }
+
+      .swf-cart-header {
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 700;
+      }
+
+      .swf-cart-close {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: #9ca3af;
+        cursor: pointer;
+      }
+
+      .swf-cart-items {
+        overflow-y: auto;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .swf-cart-empty {
+          padding: 32px;
+          text-align: center;
+          color: #9ca3af;
+          font-size: 13px;
+      }
+
+      .swf-cart-item {
+          padding: 10px 12px;
+          border-radius: 8px;
+          background: #f9fafb;
+          border: 1px solid #f3f4f6;
+      }
+
+      .swf-item-name {
+          font-size: 13px;
+          font-weight: 600;
+          color: #111;
+          margin-bottom: 2px;
+      }
+
+      .swf-item-meta {
+          font-size: 11px;
+          color: #6b7280;
+      }
+
       @keyframes swf-toast-out {
           from { transform: translateX(0); opacity: 1; }
           to { transform: translateX(100%); opacity: 0; }
+      }
+
+      /* --- REACTIONS --- */
+      .swf-floating-reaction {
+          position: absolute;
+          bottom: 40px;
+          left: 50%;
+          font-size: 32px;
+          pointer-events: none;
+          z-index: 1000003;
+          animation: swf-float-up 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+          will-change: transform, opacity;
+      }
+
+      @keyframes swf-float-up {
+          0% {
+            transform: translate(-50%, 0) scale(0.5) rotate(0deg);
+            opacity: 0;
+          }
+          15% {
+            opacity: 1;
+            transform: translate(-50%, -40px) scale(1.2) rotate(calc(var(--rotate) * 0.5));
+          }
+          100% {
+            transform: translate(calc(-50% + var(--spread-x)), -400px) scale(0.8) rotate(var(--rotate));
+            opacity: 0;
+          }
       }
     `;
     document.head.appendChild(style);
