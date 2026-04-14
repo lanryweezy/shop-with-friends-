@@ -295,12 +295,14 @@ export class UIManager {
     if (!this.dock) return;
 
     const isInSession = this.sdk.isInSession();
+    const isConnected = this.sdk.isInSession(); // Simple proxy for now
     const participantCount = this.participants.size + 1; // +1 for self
 
     if (!isInSession) {
       // IDLE STATE
       this.dock.innerHTML = `
         <button class="swf-main-btn" id="swf-start-btn">
+          <div class="swf-status-dot ${this.sdk.isInSession() ? 'swf-online' : 'swf-offline'}"></div>
           <div class="swf-icon-wrapper">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -508,6 +510,8 @@ export class UIManager {
 
   private setupEventListeners(): void {
     this.sdk.on('ws:sessionJoined', () => this.updateDockContent());
+    this.sdk.on('ws:connected', () => this.updateDockContent());
+    this.sdk.on('ws:disconnected', () => this.updateDockContent());
 
     this.sdk.on('ws:participantJoined', (user: any) => {
       const name = user.userName || 'Friend';
@@ -1142,6 +1146,19 @@ export class UIManager {
       @keyframes swf-spin { to { transform: rotate(360deg); } }
       
       .swf-hidden { display: none !important; }
+
+      .swf-status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          position: absolute;
+          top: 6px;
+          left: 6px;
+          border: 2px solid white;
+          z-index: 10;
+      }
+      .swf-status-dot.swf-online { background: #10b981; }
+      .swf-status-dot.swf-offline { background: #9ca3af; }
 
       .swf-remote-cursor {
         position: absolute;

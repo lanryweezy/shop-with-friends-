@@ -3,9 +3,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import StorePage from './components/StorePage';
 import CoShopWidget from './components/CoShopWidget';
 import DeviceFrame from './components/DeviceFrame';
+import MerchantDashboard from './components/MerchantDashboard';
 import { syncEngine } from './services/syncService';
 import { Product, SyncEvent, ViewState, ReactionType } from './types';
-import { ArrowDown, Code2, Zap, Globe } from 'lucide-react';
+import { ArrowDown, Code2, Zap, Globe, LayoutDashboard } from 'lucide-react';
 
 const REACTION_EMOJIS: Record<string, string> = {
   heart: '❤️',
@@ -376,12 +377,21 @@ const App = () => {
             <img src="/favicon.png" alt="Shop with Friends" className="w-8 h-8" />
             Shop with Friends
           </div>
-          <a
-            href="/docs.html"
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            Documentation
-          </a>
+          <div className="flex items-center gap-6">
+            <a
+              href="#dashboard"
+              className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+            >
+              <LayoutDashboard size={16} />
+              Merchant Portal
+            </a>
+            <a
+              href="/docs.html"
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              Documentation
+            </a>
+          </div>
         </div>
       </nav>
 
@@ -554,6 +564,13 @@ const App = () => {
               <p className="text-gray-400 text-sm">Voice starts automatically. Browse, react, decide together.</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Merchant Dashboard Section */}
+      <section id="dashboard" className="py-20 px-6 scroll-mt-16 bg-gradient-to-b from-transparent to-purple-900/10">
+        <div className="max-w-6xl mx-auto">
+          <MerchantDashboard />
         </div>
       </section>
 

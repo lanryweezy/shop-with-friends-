@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid';
 import cors from 'cors';
 import SessionManager from './sessionManager.js';
 import WebSocketHandler from './websocketHandler.js';
-import { isValidApiKey } from './auth.js';
+import { isValidApiKey, apiKeyMiddleware } from './auth.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -121,7 +121,7 @@ app.get('/api/stats/:apiKey', async (req, res) => {
     try {
         const { apiKey } = req.params;
 
-        // Basic auth or check VALID_API_KEYS
+        // Use middleware or manual validation
         if (!isValidApiKey(apiKey)) {
             return res.status(401).json({ error: 'Invalid API Key' });
         }
