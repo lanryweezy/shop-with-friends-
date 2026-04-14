@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid';
 import cors from 'cors';
 import SessionManager from './sessionManager.js';
 import WebSocketHandler from './websocketHandler.js';
+import { isValidApiKey } from './auth.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -57,15 +58,21 @@ app.get('/health', (req, res) => {
  */
 app.post('/api/sessions/create', async (req, res) => {
     try {
-        const { userId, userName, metadata } = req.body;
+        const { userId, userName, metadata, apiKey } = req.body;
 
         if (!userId) {
             return res.status(400).json({ error: 'userId is required' });
         }
 
+        // Validate API Key
+        if (!isValidApiKey(apiKey)) {
+            return res.status(401).json({ error: 'Invalid API Key' });
+        }
+
         const session = await sessionManager.createSession(userId, {
             ...metadata,
-            hostName: userName
+            hostName: userName,
+            apiKey: apiKey
         });
 
         const inviteLink = sessionManager.generateInviteLink(session.id);
@@ -103,6 +110,27 @@ app.get('/api/sessions/:sessionId', async (req, res) => {
     } catch (error) {
         console.error('Error getting session:', error);
         res.status(500).json({ error: 'Failed to get session' });
+    }
+});
+
+/**
+ * GET /api/stats/:apiKey
+ * Get usage statistics for an API key
+ */
+app.get('/api/stats/:apiKey', async (req, res) => {
+    try {
+        const { apiKey } = req.params;
+
+        // Basic auth or check VALID_API_KEYS
+        if (!isValidApiKey(apiKey)) {
+            return res.status(401).json({ error: 'Invalid API Key' });
+        }
+
+        const stats = await sessionManager.getStats(apiKey);
+        res.json(stats);
+    } catch (error) {
+        console.error('Error getting stats:', error);
+        res.status(500).json({ error: 'Failed to get stats' });
     }
 });
 

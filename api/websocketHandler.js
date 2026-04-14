@@ -1,6 +1,7 @@
 /**
  * WebSocket Handler - Routes and processes WebSocket messages
  */
+import { isValidApiKey } from './auth.js';
 
 export class WebSocketHandler {
     constructor(sessionManager) {
@@ -92,9 +93,21 @@ export class WebSocketHandler {
      * Create new session
      */
     async handleCreateSession(ws, clientId, payload) {
-        const { metadata } = payload || {};
+        const { metadata, apiKey } = payload || {};
 
-        const session = await this.sessionManager.createSession(clientId, metadata);
+        // Validate API Key
+        if (!isValidApiKey(apiKey)) {
+            this.send(ws, {
+                type: 'ERROR',
+                payload: { message: 'Invalid API Key' }
+            });
+            return;
+        }
+
+        const session = await this.sessionManager.createSession(clientId, {
+            ...metadata,
+            apiKey: apiKey || 'demo'
+        });
 
         // Store session ID on WebSocket for easy access
         ws.sessionId = session.id;

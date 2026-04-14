@@ -5,8 +5,8 @@ Add real-time collaborative shopping, voice chat, and synchronized browsing to a
 ## Features
 
 - 🛍️ **Real-time Cart Sync**: Synchronize cart actions between users instantly.
-- 🎤 **Voice Chat**: Built-in high-quality voice chat for users to talk while they shop.
-- 🖱️ **Cursor Tracking**: See where your friends are looking and clicking.
+- 🎤 **Voice & Video Chat**: Built-in high-quality voice and video chat for users to talk while they shop.
+- 🖱️ **Cursor Tracking**: See where your friends are looking and clicking in real-time.
 - 🔗 **Easy Integration**: Works with Shopify, WooCommerce, or any custom stack.
 
 ## Installation
