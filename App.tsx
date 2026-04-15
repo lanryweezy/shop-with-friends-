@@ -419,13 +419,20 @@ const App = () => {
           <p className="text-lg sm:text-xl text-gray-200 max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100 drop-shadow-lg font-medium px-4">
             Simple API that lets two people shop together inside any platform. Oceans apart, but scrolling as one.
           </p>
-          <div className="flex items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200 px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200 px-4">
             <button
               onClick={scrollToDemo}
               className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2 group shadow-[0_0_20px_rgba(255,255,255,0.3)] touch-manipulation"
             >
-              Experience Live Demo <ArrowDown size={18} className="group-hover:translate-y-1 transition-transform" />
+              Experience Demo <ArrowDown size={18} className="group-hover:translate-y-1 transition-transform" />
             </button>
+            <a
+              href="/sdk/test-prod.html"
+              target="_blank"
+              className="w-full sm:w-auto bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-semibold hover:bg-white/20 transition-all flex items-center justify-center gap-2"
+            >
+              Try SDK v1.1.2 <Globe size={18} />
+            </a>
           </div>
         </div>
       </section>
