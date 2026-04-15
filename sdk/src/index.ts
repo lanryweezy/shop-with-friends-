@@ -33,6 +33,9 @@ export interface ShopWithFriendsConfig {
 
     // UI Labels (i18n)
     labels?: {
+        connectionLost?: string;
+        reconnect?: string;
+        connectionRestored?: string;
         shopTogether?: string;
         inviteFriends?: string;
         copyLink?: string;
@@ -72,6 +75,7 @@ export class ShopWithFriends {
     private clientId: string | null = null;
     private currentSessionId: string | null = null;
     private isInitialized: boolean = false;
+    private isReconnecting: boolean = false;
 
     constructor(config: ShopWithFriendsConfig) {
         if (!config.apiKey) {
@@ -108,6 +112,16 @@ export class ShopWithFriends {
         }
 
         this.setupEventHandlers();
+    }
+
+    private handleAutoRejoin(): void {
+        if (this.currentSessionId) {
+            console.log('🔄 Rejoining session after reconnection:', this.currentSessionId);
+            const userName = localStorage.getItem('swf_user_name');
+            this.joinSession(this.currentSessionId, userName || undefined).catch(err => {
+                console.error('Failed to auto-rejoin session:', err);
+            });
+        }
     }
 
     /**
@@ -457,6 +471,13 @@ export class ShopWithFriends {
     }
 
     /**
+     * Check if connected to WebSocket server
+     */
+    public isConnected(): boolean {
+        return this.ws.isConnected();
+    }
+
+    /**
      * Destroy SDK instance
      */
     destroy(): void {
@@ -503,6 +524,17 @@ export class ShopWithFriends {
         this.events.on('ws:error', (error: any) => {
             if (this.config.onError) {
                 this.config.onError(error);
+            }
+        });
+
+        this.events.on('ws:connected', () => {
+            if (this.isInitialized && this.currentSessionId) {
+                this.isReconnecting = true;
+                this.ws.waitForClientId().then(id => {
+                    this.clientId = id;
+                    this.handleAutoRejoin();
+                    this.isReconnecting = false;
+                });
             }
         });
 

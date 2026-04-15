@@ -6,10 +6,21 @@ const MerchantDashboard: React.FC = () => {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [autoRefresh, setAutoRefresh] = useState(false);
 
-    const fetchStats = async () => {
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (autoRefresh && apiKey && !error) {
+            interval = setInterval(() => {
+                fetchStats(true);
+            }, 5000);
+        }
+        return () => clearInterval(interval);
+    }, [autoRefresh, apiKey, error]);
+
+    const fetchStats = async (isBackground = false) => {
         if (!apiKey) return;
-        setLoading(true);
+        if (!isBackground) setLoading(true);
         setError('');
         try {
             // Use relative URL or env var for production readiness
@@ -50,14 +61,25 @@ const MerchantDashboard: React.FC = () => {
                             className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:border-purple-500 transition-colors outline-none"
                         />
                     </div>
-                    <button
-                        onClick={fetchStats}
-                        disabled={loading || !apiKey}
-                        className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-6 rounded-xl font-semibold transition-all flex items-center gap-2"
-                    >
-                        {loading ? <Loader2 className="animate-spin" size={18} /> : <Activity size={18} />}
-                        Sync
-                    </button>
+                    <div className="flex flex-col gap-2">
+                        <button
+                            onClick={() => fetchStats()}
+                            disabled={loading || !apiKey}
+                            className="bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2"
+                        >
+                            {loading ? <Loader2 className="animate-spin" size={18} /> : <Activity size={18} />}
+                            Sync
+                        </button>
+                        <label className="flex items-center gap-2 text-xs text-gray-500 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={autoRefresh}
+                                onChange={(e) => setAutoRefresh(e.target.checked)}
+                                className="rounded border-white/10 bg-black/40"
+                            />
+                            Auto-refresh (5s)
+                        </label>
+                    </div>
                 </div>
             </div>
 

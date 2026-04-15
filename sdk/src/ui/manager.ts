@@ -27,6 +27,9 @@ export class UIManager {
 
   private initLabels(): void {
       this.labels = {
+          connectionLost: 'Connection lost',
+          reconnect: 'Reconnect',
+          connectionRestored: 'Connection restored!',
           shopTogether: 'Shop Together',
           inviteFriends: 'Share this link to invite friends to your session:',
           copyLink: 'Copy Link',
@@ -295,14 +298,14 @@ export class UIManager {
     if (!this.dock) return;
 
     const isInSession = this.sdk.isInSession();
-    const isConnected = this.sdk.isInSession(); // Simple proxy for now
+    const isConnected = this.sdk.isConnected();
     const participantCount = this.participants.size + 1; // +1 for self
 
     if (!isInSession) {
       // IDLE STATE
       this.dock.innerHTML = `
         <button class="swf-main-btn" id="swf-start-btn">
-          <div class="swf-status-dot ${this.sdk.isInSession() ? 'swf-online' : 'swf-offline'}"></div>
+          <div class="swf-status-dot ${isConnected ? 'swf-online' : 'swf-offline'}"></div>
           <div class="swf-icon-wrapper">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -357,7 +360,7 @@ export class UIManager {
               </svg>
             </button>
 
-            <button class="swf-control-btn" id="swf-follow-btn" title="${this.labels.followFriend}">
+            <button class="swf-control-btn ${this.isFollowing ? 'swf-active' : ''}" id="swf-follow-btn" title="${this.labels.followFriend}">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
@@ -407,6 +410,22 @@ export class UIManager {
       });
       this.dock.querySelector('#swf-invite-more-btn')?.addEventListener('click', () => this.handleInviteClick());
       this.dock.querySelector('#swf-leave-btn')?.addEventListener('click', () => this.handleLeave());
+
+      // Handle disconnected state UI in dock
+      if (!isConnected) {
+          const controls = this.dock.querySelector('.swf-controls');
+          if (controls) {
+              controls.innerHTML = `
+                  <div class="swf-connection-error">
+                      <span>${this.labels.connectionLost}</span>
+                      <button class="swf-reconnect-btn" id="swf-reconnect-btn">${this.labels.reconnect}</button>
+                  </div>
+              `;
+              controls.querySelector('#swf-reconnect-btn')?.addEventListener('click', () => {
+                  window.location.reload(); // Simplest way to full reconnect for now
+              });
+          }
+      }
     }
   }
 
@@ -510,7 +529,12 @@ export class UIManager {
 
   private setupEventListeners(): void {
     this.sdk.on('ws:sessionJoined', () => this.updateDockContent());
-    this.sdk.on('ws:connected', () => this.updateDockContent());
+    this.sdk.on('ws:connected', () => {
+        if (this.dock?.querySelector('.swf-reconnect-btn')) {
+            this.showToast(this.labels.connectionRestored);
+        }
+        this.updateDockContent();
+    });
     this.sdk.on('ws:disconnected', () => this.updateDockContent());
 
     this.sdk.on('ws:participantJoined', (user: any) => {
@@ -785,6 +809,14 @@ export class UIManager {
           // Don't sync if we are currently handling a remote scroll
           if (this.isHandlingRemoteScroll) return;
 
+          // If user manually scrolls while following, stop following
+          if (this.isFollowing) {
+              this.isFollowing = false;
+              const btn = this.dock?.querySelector('#swf-follow-btn');
+              if (btn) btn.classList.remove('swf-active');
+              this.showToast(this.labels.stoppedFollowing);
+          }
+
           const now = Date.now();
           if (now - lastSend > throttle) {
               this.sdk.syncScroll(window.scrollY, window.scrollX);
@@ -862,6 +894,26 @@ export class UIManager {
       .swf-bottom-left { bottom: 24px; left: 24px; }
 
       /* --- DOCK UI --- */
+      .swf-connection-error {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #ef4444;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 0 8px;
+      }
+      .swf-reconnect-btn {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
       .swf-dock {
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(16px);
