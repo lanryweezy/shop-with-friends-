@@ -78,11 +78,9 @@ export class WebSocketClient {
      * Wait for CLIENT_ID message from server
      */
     waitForClientId(): Promise<string> {
-        if (!this.clientIdPromise) {
-            this.clientIdPromise = new Promise((resolve) => {
-                this.clientIdResolve = resolve;
-            });
-        }
+        this.clientIdPromise = new Promise((resolve) => {
+            this.clientIdResolve = resolve;
+        });
         return this.clientIdPromise;
     }
 
@@ -123,8 +121,10 @@ export class WebSocketClient {
 
             switch (message.type) {
                 case 'CLIENT_ID':
+                    this.clientId = message.payload.clientId;
                     if (this.clientIdResolve) {
                         this.clientIdResolve(message.payload.clientId);
+                        this.clientIdResolve = null;
                     }
                     break;
 

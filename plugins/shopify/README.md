@@ -232,6 +232,17 @@ swf.on('sync:cart', (data) => {
 
 ---
 
+## Changelog
+
+### Version 1.1.2 (2025-04-15)
+- ✨ Polished for mass adoption
+- 🔄 Automated session re-join after connection loss
+- 📱 Improved 'Follow' mode UX (auto-pause on scroll)
+- 🔌 Centralized API Key validation
+- ✅ Optimized performance and reliability
+
+---
+
 ## What's Next?
 
 - ✅ Shopify installation complete

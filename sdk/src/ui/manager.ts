@@ -20,6 +20,34 @@ export class UIManager {
   constructor(sdk: ShopWithFriends, config: ShopWithFriendsConfig) {
     this.sdk = sdk;
     this.config = config;
+    this.initLabels();
+  }
+
+  private initLabels(): void {
+      this.labels = {
+          connectionLost: 'Connection lost',
+          reconnect: 'Reconnect',
+          connectionRestored: 'Connection restored!',
+          shopTogether: 'Shop Together',
+          inviteFriends: 'Share this link to invite friends to your session:',
+          copyLink: 'Copy Link',
+          joinFriend: 'Join Friend',
+          enterName: 'Your friend invited you to shop together! Enter your name to join:',
+          joinSession: 'Join Session',
+          sharedCart: 'Shared Cart',
+          cartEmpty: "Your friend's cart is empty",
+          chat: 'Chat',
+          typeMessage: 'Type a message...',
+          videoChat: 'Video Chat',
+          voiceChat: 'Voice Chat',
+          followFriend: 'Follow Friend',
+          nowFollowing: "👀 Now following friend's view",
+          stoppedFollowing: 'Stopped following',
+          friendJoined: 'Friend joined',
+          friendLeft: 'Friend left',
+          jumpToThem: 'Jump to them',
+          ...this.config.labels
+      };
   }
 
   /**
@@ -53,13 +81,13 @@ export class UIManager {
         <button class="swf-modal-close">&times;</button>
         <div class="swf-modal-header">
           <div class="swf-modal-icon">🛍️</div>
-          <h3>Shop Together</h3>
+          <h3>${this.labels.shopTogether}</h3>
         </div>
-        <p>Share this link to invite friends to your session:</p>
+        <p>${this.labels.inviteFriends}</p>
         
         <div class="swf-invite-link-container">
           <input type="text" readonly value="${inviteLink}" class="swf-invite-link" id="swf-invite-link-input" />
-          <button class="swf-copy-btn" id="swf-copy-btn">Copy Link</button>
+          <button class="swf-copy-btn" id="swf-copy-btn">${this.labels.copyLink}</button>
         </div>
 
         <div class="swf-share-label">Or share via:</div>
@@ -268,12 +296,14 @@ export class UIManager {
     if (!this.dock) return;
 
     const isInSession = this.sdk.isInSession();
+    const isConnected = this.sdk.isConnected();
     const participantCount = this.participants.size + 1; // +1 for self
 
     if (!isInSession) {
       // IDLE STATE
       this.dock.innerHTML = `
         <button class="swf-main-btn" id="swf-start-btn">
+          <div class="swf-status-dot ${isConnected ? 'swf-online' : 'swf-offline'}"></div>
           <div class="swf-icon-wrapper">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -282,7 +312,7 @@ export class UIManager {
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
           </div>
-          <span class="swf-btn-text">Shop Together</span>
+          <span class="swf-btn-text">${this.labels.shopTogether}</span>
         </button>
       `;
       this.dock.querySelector('#swf-start-btn')?.addEventListener('click', () => this.handleInviteClick());
@@ -299,7 +329,7 @@ export class UIManager {
           <div class="swf-divider"></div>
           
           <div class="swf-controls">
-            <button class="swf-control-btn ${this.config.enableVoice ? '' : 'swf-hidden'}" id="swf-voice-btn" title="Voice Chat">
+            <button class="swf-control-btn ${this.config.enableVoice ? '' : 'swf-hidden'}" id="swf-voice-btn" title="${this.labels.voiceChat}">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -378,6 +408,22 @@ export class UIManager {
       });
       this.dock.querySelector('#swf-invite-more-btn')?.addEventListener('click', () => this.handleInviteClick());
       this.dock.querySelector('#swf-leave-btn')?.addEventListener('click', () => this.handleLeave());
+
+      // Handle disconnected state UI in dock
+      if (!isConnected) {
+          const controls = this.dock.querySelector('.swf-controls');
+          if (controls) {
+              controls.innerHTML = `
+                  <div class="swf-connection-error">
+                      <span>${this.labels.connectionLost}</span>
+                      <button class="swf-reconnect-btn" id="swf-reconnect-btn">${this.labels.reconnect}</button>
+                  </div>
+              `;
+              controls.querySelector('#swf-reconnect-btn')?.addEventListener('click', () => {
+                  window.location.reload(); // Simplest way to full reconnect for now
+              });
+          }
+      }
     }
   }
 
@@ -481,13 +527,23 @@ export class UIManager {
 
   private setupEventListeners(): void {
     this.sdk.on('ws:sessionJoined', () => this.updateDockContent());
+    this.sdk.on('ws:connected', () => {
+        if (this.dock?.querySelector('.swf-reconnect-btn')) {
+            this.showToast(this.labels.connectionRestored);
+        }
+        this.updateDockContent();
+    });
+    this.sdk.on('ws:disconnected', () => this.updateDockContent());
 
     this.sdk.on('ws:participantJoined', (user: any) => {
-      this.participants.set(user.userId, user.userName || 'Friend');
+      const name = user.userName || 'Friend';
+      this.participants.set(user.userId, name);
+      this.addChatMessage('System', `${name} ${this.labels.friendJoined}`, false, true);
       this.updateDockContent();
     });
 
     this.sdk.on('ws:participantLeft', (user: any) => {
+      const name = this.participants.get(user.userId) || 'Friend';
       this.participants.delete(user.userId);
       this.removeRemoteCursor(user.userId);
       this.updateDockContent();
@@ -778,6 +834,26 @@ export class UIManager {
       .swf-bottom-left { bottom: 24px; left: 24px; }
 
       /* --- DOCK UI --- */
+      .swf-connection-error {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #ef4444;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 0 8px;
+      }
+      .swf-reconnect-btn {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
       .swf-dock {
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(16px);

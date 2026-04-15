@@ -31,6 +31,31 @@ export interface ShopWithFriendsConfig {
     productName?: string;
     productUrl?: string;
 
+    // UI Labels (i18n)
+    labels?: {
+        connectionLost?: string;
+        reconnect?: string;
+        connectionRestored?: string;
+        shopTogether?: string;
+        inviteFriends?: string;
+        copyLink?: string;
+        joinFriend?: string;
+        enterName?: string;
+        joinSession?: string;
+        sharedCart?: string;
+        cartEmpty?: string;
+        chat?: string;
+        typeMessage?: string;
+        videoChat?: string;
+        voiceChat?: string;
+        followFriend?: string;
+        nowFollowing?: string;
+        stoppedFollowing?: string;
+        friendJoined?: string;
+        friendLeft?: string;
+        jumpToThem?: string;
+    };
+
     // Callbacks
     onSessionCreated?: (session: any) => void;
     onParticipantJoined?: (user: any) => void;
@@ -50,6 +75,7 @@ export class ShopWithFriends {
     private clientId: string | null = null;
     private currentSessionId: string | null = null;
     private isInitialized: boolean = false;
+    private isReconnecting: boolean = false;
 
     constructor(config: ShopWithFriendsConfig) {
         if (!config.apiKey) {
@@ -86,6 +112,16 @@ export class ShopWithFriends {
         }
 
         this.setupEventHandlers();
+    }
+
+    private handleAutoRejoin(): void {
+        if (this.currentSessionId) {
+            console.log('🔄 Rejoining session after reconnection:', this.currentSessionId);
+            const userName = localStorage.getItem('swf_user_name');
+            this.joinSession(this.currentSessionId, userName || undefined).catch(err => {
+                console.error('Failed to auto-rejoin session:', err);
+            });
+        }
     }
 
     /**
@@ -432,6 +468,13 @@ export class ShopWithFriends {
      */
     public isInSession(): boolean {
         return this.currentSessionId !== null;
+    }
+
+    /**
+     * Check if connected to WebSocket server
+     */
+    public isConnected(): boolean {
+        return this.ws.isConnected();
     }
 
     /**

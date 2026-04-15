@@ -6,6 +6,7 @@ import { nanoid } from 'nanoid';
 import cors from 'cors';
 import SessionManager from './sessionManager.js';
 import WebSocketHandler from './websocketHandler.js';
+import { isValidApiKey, apiKeyMiddleware } from './auth.js';
 
 const app = express();
 const server = http.createServer(app);
@@ -24,6 +25,7 @@ const VALID_API_KEYS = new Set(process.env.API_KEYS?.split(',') || ['demo-key-12
 // CORS configuration
 const corsOrigins = process.env.CORS_ORIGINS?.split(',') || [
     'http://localhost:3000',
+    'http://localhost:3002',
     'http://localhost:5173',
     'https://shop-with-friends.vercel.app',
     'https://shop-with-friends-git-main-lanryweezys-projects.vercel.app'
@@ -51,12 +53,6 @@ app.get('/health', (req, res) => {
 /**
  * POST /api/sessions/create
  * Create a new shopping session
- * 
- * Body: {
- *   userId: string,
- *   userName?: string,
- *   metadata?: object
- * }
  */
 app.post('/api/sessions/create', async (req, res) => {
     try {
@@ -116,6 +112,26 @@ app.get('/api/sessions/:sessionId', async (req, res) => {
 });
 
 /**
+ * GET /api/stats/:apiKey
+ * Get usage statistics for an API key
+ */
+app.get('/api/stats/:apiKey', async (req, res) => {
+    try {
+        const { apiKey } = req.params;
+
+        if (!isValidApiKey(apiKey)) {
+            return res.status(401).json({ error: 'Invalid API Key' });
+        }
+
+        const stats = await sessionManager.getStats(apiKey);
+        res.json(stats);
+    } catch (error) {
+        console.error('Error getting stats:', error);
+        res.status(500).json({ error: 'Failed to get stats' });
+    }
+});
+
+/**
  * GET /api/config/webrtc
  * Get WebRTC configuration (ICE servers)
  */
@@ -126,7 +142,6 @@ app.get('/api/config/webrtc', (req, res) => {
         }
     ];
 
-    // Add TURN server if configured
     if (process.env.TURN_SERVER_URL) {
         iceServers.push({
             urls: process.env.TURN_SERVER_URL,
@@ -141,7 +156,6 @@ app.get('/api/config/webrtc', (req, res) => {
 /**
  * GET /join/:sessionId
  * Redirect to app with session ID
- * This is used for invite links
  */
 app.get('/join/:sessionId', async (req, res) => {
     const { sessionId } = req.params;
@@ -151,7 +165,6 @@ app.get('/join/:sessionId', async (req, res) => {
         return res.status(404).send('Session not found or expired');
     }
 
-    // Redirect to app with session ID in query params
     const appUrl = process.env.APP_URL || 'http://localhost:3000';
     res.redirect(`${appUrl}?join=${sessionId}`);
 });

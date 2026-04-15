@@ -1,6 +1,7 @@
 /**
  * WebSocket Handler - Routes and processes WebSocket messages
  */
+import { isValidApiKey } from './auth.js';
 
 const VALID_API_KEYS = new Set(process.env.API_KEYS?.split(',') || ['demo-key-123']);
 

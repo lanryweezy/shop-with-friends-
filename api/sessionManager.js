@@ -230,6 +230,37 @@ class SessionManager {
     }
 
     /**
+     * Track usage statistics
+     */
+    async trackUsage(apiKey, event) {
+        if (this.useRedis) {
+            const key = `stats:${apiKey}`;
+            await this.redis.hincrby(key, event, 1);
+            await this.redis.hincrby(key, 'total_events', 1);
+        } else {
+            // In-memory stats
+            if (!this.stats) this.stats = new Map();
+            if (!this.stats.has(apiKey)) {
+                this.stats.set(apiKey, { session_created: 0, participant_joined: 0, total_events: 0 });
+            }
+            const s = this.stats.get(apiKey);
+            s[event] = (s[event] || 0) + 1;
+            s.total_events++;
+        }
+    }
+
+    /**
+     * Get usage statistics for an API key
+     */
+    async getStats(apiKey) {
+        if (this.useRedis) {
+            return await this.redis.hgetall(`stats:${apiKey}`);
+        } else {
+            return this.stats?.get(apiKey) || { session_created: 0, participant_joined: 0, total_events: 0 };
+        }
+    }
+
+    /**
      * Close connection
      */
     async close() {

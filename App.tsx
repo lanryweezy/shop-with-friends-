@@ -3,9 +3,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import StorePage from './components/StorePage';
 import CoShopWidget from './components/CoShopWidget';
 import DeviceFrame from './components/DeviceFrame';
+import MerchantDashboard from './components/MerchantDashboard';
 import { syncEngine } from './services/syncService';
 import { Product, SyncEvent, ViewState, ReactionType } from './types';
-import { ArrowDown, Code2, Zap, Globe } from 'lucide-react';
+import { ArrowDown, Code2, Zap, Globe, LayoutDashboard } from 'lucide-react';
 
 const REACTION_EMOJIS: Record<string, string> = {
   heart: '❤️',
@@ -376,12 +377,21 @@ const App = () => {
             <img src="/favicon.png" alt="Shop with Friends" className="w-8 h-8" />
             Shop with Friends
           </div>
-          <a
-            href="/docs.html"
-            className="text-sm text-gray-400 hover:text-white transition-colors"
-          >
-            Documentation
-          </a>
+          <div className="flex items-center gap-6">
+            <a
+              href="#dashboard"
+              className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+            >
+              <LayoutDashboard size={16} />
+              Merchant Portal
+            </a>
+            <a
+              href="/docs.html"
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              Documentation
+            </a>
+          </div>
         </div>
       </nav>
 
@@ -409,13 +419,20 @@ const App = () => {
           <p className="text-lg sm:text-xl text-gray-200 max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100 drop-shadow-lg font-medium px-4">
             Simple API that lets two people shop together inside any platform. Oceans apart, but scrolling as one.
           </p>
-          <div className="flex items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200 px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200 px-4">
             <button
               onClick={scrollToDemo}
               className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2 group shadow-[0_0_20px_rgba(255,255,255,0.3)] touch-manipulation"
             >
-              Experience Live Demo <ArrowDown size={18} className="group-hover:translate-y-1 transition-transform" />
+              Experience Demo <ArrowDown size={18} className="group-hover:translate-y-1 transition-transform" />
             </button>
+            <a
+              href="/sdk/test-prod.html"
+              target="_blank"
+              className="w-full sm:w-auto bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-semibold hover:bg-white/20 transition-all flex items-center justify-center gap-2"
+            >
+              Try SDK v1.1.2 <Globe size={18} />
+            </a>
           </div>
         </div>
       </section>
@@ -554,6 +571,13 @@ const App = () => {
               <p className="text-gray-400 text-sm">Voice starts automatically. Browse, react, decide together.</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Merchant Dashboard Section */}
+      <section id="dashboard" className="py-20 px-6 scroll-mt-16 bg-gradient-to-b from-transparent to-purple-900/10">
+        <div className="max-w-6xl mx-auto">
+          <MerchantDashboard />
         </div>
       </section>
 

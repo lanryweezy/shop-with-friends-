@@ -361,7 +361,7 @@
 
                 <div class="feature-card">
                     <div class="feature-icon">💬</div>
-                    <div class="feature-title">Voice & Video <span class="badge beta">Live Now</span></div>
+                    <div class="feature-title">Voice & Video</div>
                     <div class="feature-desc">Built-in WebRTC voice and video chat for seamless communication</div>
                 </div>
 
@@ -397,12 +397,16 @@
 
             <h3>Option 1: Script Tag (Easiest)</h3>
             <pre><code>&lt;!-- Add to your product pages --&gt;
-&lt;script src="https://cdn.shopwithfriends.io/v1/swf.js"&gt;&lt;/script&gt;
-&lt;script&gt;
-  ShopWithFriends.init({
+&lt;script src="https://unpkg.com/shop-with-friends@1.1.2/dist/shop-with-friends.js" type="module"&gt;&lt;/script&gt;
+&lt;script type="module"&gt;
+  import { ShopWithFriends } from 'https://unpkg.com/shop-with-friends@1.1.2/dist/shop-with-friends.js';
+
+  const swf = new ShopWithFriends({
     apiKey: 'your_api_key_here',
     productId: '12345'
   });
+
+  await swf.init();
 &lt;/script&gt;</code></pre>
 
             <h3>Option 2: NPM Package</h3>
@@ -466,13 +470,12 @@ swf.on('reaction', (data) => {
 });</code></pre>
 
             <!-- SDK Documentation -->
-            <h2 id="sdk">Client SDK <span class="badge beta">Live Now</span></h2>
-            <p>The official Shop with Friends JavaScript SDK makes integration effortless. Full documentation coming
-                with SDK release.</p>
+            <h2 id="sdk">Client SDK</h2>
+            <p>The official Shop with Friends JavaScript SDK makes integration effortless. Use it to build custom shopping experiences on any platform.</p>
 
             <!-- WebSocket API -->
-            <h2 id="api">WebSocket API <span class="badge beta">Live Now</span></h2>
-            <p>Connect directly to our WebSocket server for custom integrations.</p>
+            <h2 id="api">WebSocket API</h2>
+            <p>Connect directly to our WebSocket server for custom integrations or low-level control.</p>
 
             <h3>Connection</h3>
             <pre><code>const ws = new WebSocket('wss://api.shopwithfriends.io');
@@ -561,11 +564,11 @@ Content-Type: application/json
             </div>
 
             <!-- Platform Integration -->
-            <h2 id="shopify">Shopify Integration <span class="badge beta">Live Now</span></h2>
-            <p>Native Shopify app for one-click installation. No coding required.</p>
+            <h2 id="shopify">Shopify Integration</h2>
+            <p>Native Shopify snippet for easy installation. <a href="https://github.com/lanryweezy/shop-with-friends/tree/main/plugins/shopify" style="color: #667eea;">View Setup Guide</a></p>
 
-            <h2 id="woocommerce">WooCommerce Plugin <span class="badge beta">Live Now</span></h2>
-            <p>WordPress plugin for WooCommerce stores. Install and activate in seconds.</p>
+            <h2 id="woocommerce">WooCommerce Plugin</h2>
+            <p>WordPress plugin for WooCommerce stores. Install and activate in seconds. <a href="https://github.com/lanryweezy/shop-with-friends/tree/main/plugins/woocommerce" style="color: #667eea;">View Plugin Files</a></p>
 
             <h2 id="custom">Custom Sites</h2>
             <p>For custom e-commerce platforms, use our SDK or WebSocket API directly. Full flexibility to integrate
