@@ -54,7 +54,6 @@ class SessionManager {
 
         // Basic Analytics
         console.log(`[ANALYTICS] Session Created: ${sessionId} | Host: ${hostUserId} | Key: ${metadata.apiKey || 'none'}`);
-        this.trackUsage(metadata.apiKey || 'demo', 'session_created');
 
         if (this.useRedis) {
             // Store in Redis
@@ -99,8 +98,6 @@ class SessionManager {
 
         // Basic Analytics
         console.log(`[ANALYTICS] Participant Joined: ${sessionId} | User: ${userId} | Name: ${userName || 'Anonymous'}`);
-        const sessionForUsage = await this.getSession(sessionId);
-        this.trackUsage(sessionForUsage?.metadata?.apiKey || 'demo', 'participant_joined');
 
         if (this.useRedis) {
             await this.redis.setex(

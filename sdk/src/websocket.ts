@@ -15,7 +15,6 @@ export class WebSocketClient {
     private isConnecting = false;
     private clientIdPromise: Promise<string> | null = null;
     private clientIdResolve: ((id: string) => void) | null = null;
-    public clientId: string | null = null;
     public apiKey: string | null = null;
 
     constructor(url: string, events: EventEmitter) {
