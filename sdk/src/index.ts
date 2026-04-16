@@ -31,6 +31,31 @@ export interface ShopWithFriendsConfig {
     productName?: string;
     productUrl?: string;
 
+    // UI Labels (i18n)
+    labels?: {
+        connectionLost?: string;
+        reconnect?: string;
+        connectionRestored?: string;
+        shopTogether?: string;
+        inviteFriends?: string;
+        copyLink?: string;
+        joinFriend?: string;
+        enterName?: string;
+        joinSession?: string;
+        sharedCart?: string;
+        cartEmpty?: string;
+        chat?: string;
+        typeMessage?: string;
+        videoChat?: string;
+        voiceChat?: string;
+        followFriend?: string;
+        nowFollowing?: string;
+        stoppedFollowing?: string;
+        friendJoined?: string;
+        friendLeft?: string;
+        jumpToThem?: string;
+    };
+
     // Callbacks
     onSessionCreated?: (session: any) => void;
     onParticipantJoined?: (user: any) => void;
@@ -50,6 +75,7 @@ export class ShopWithFriends {
     private clientId: string | null = null;
     private currentSessionId: string | null = null;
     private isInitialized: boolean = false;
+    private isReconnecting: boolean = false;
 
     constructor(config: ShopWithFriendsConfig) {
         if (!config.apiKey) {
@@ -68,6 +94,8 @@ export class ShopWithFriends {
 
         this.events = new EventEmitter();
         this.ws = new WebSocketClient(this.config.apiUrl!, this.events);
+        // Pass API key to WebSocket client for session creation
+        this.ws.apiKey = this.config.apiKey;
         this.session = new SessionManager(this.ws, this.events);
 
         // Initialize WebRTC if enabled
@@ -84,6 +112,16 @@ export class ShopWithFriends {
         }
 
         this.setupEventHandlers();
+    }
+
+    private handleAutoRejoin(): void {
+        if (this.currentSessionId) {
+            console.log('🔄 Rejoining session after reconnection:', this.currentSessionId);
+            const userName = localStorage.getItem('swf_user_name');
+            this.joinSession(this.currentSessionId, userName || undefined).catch(err => {
+                console.error('Failed to auto-rejoin session:', err);
+            });
+        }
     }
 
     /**
@@ -104,7 +142,7 @@ export class ShopWithFriends {
             this.isInitialized = true;
             console.log('✅ Shop with Friends SDK initialized');
 
-            // Check if we should auto-join from URL
+            // Check if we should auto-join from URL or restore session
             this.checkAutoJoin();
 
             // Render UI if enabled
@@ -123,13 +161,18 @@ export class ShopWithFriends {
     /**
      * Create a new shopping session
      */
-    async createSession(metadata?: any): Promise<any> {
+    public async createSession(metadata?: any): Promise<any> {
         if (!this.isInitialized) {
             throw new Error('SDK not initialized. Call init() first.');
         }
 
         const session = await this.session.create(metadata);
         this.currentSessionId = session.sessionId;
+
+        // Persist session
+        if (this.currentSessionId) {
+            localStorage.setItem('swf_session_id', this.currentSessionId);
+        }
 
         if (this.config.onSessionCreated) {
             this.config.onSessionCreated(session);
@@ -141,35 +184,63 @@ export class ShopWithFriends {
     /**
      * Join an existing session
      */
-    async joinSession(sessionId: string, userName?: string): Promise<void> {
+    public async joinSession(sessionId: string, userName?: string): Promise<void> {
         if (!this.isInitialized) {
             throw new Error('SDK not initialized. Call init() first.');
         }
 
-        await this.session.join(sessionId, userName);
+        const session = await this.session.join(sessionId, userName);
         this.currentSessionId = sessionId;
+
+        // Persist session
+        localStorage.setItem('swf_session_id', sessionId);
+        if (userName) localStorage.setItem('swf_user_name', userName);
+
+        // Connect to existing participants
+        if (this.webrtc && (this.config.enableVoice || this.config.enableVideo)) {
+            session.participants.forEach((p: any) => {
+                if (p.userId !== this.clientId) {
+                    this.webrtc?.connectToPeer(p.userId);
+                }
+            });
+        }
     }
 
     /**
      * Leave current session
      */
-    async leaveSession(): Promise<void> {
+    public async leaveSession(): Promise<void> {
         if (!this.currentSessionId) {
             console.warn('Not in a session');
             return;
         }
 
-        await this.session.leave(this.currentSessionId);
-        this.currentSessionId = null;
+        try {
+            await this.session.leave(this.currentSessionId);
+        } catch (error) {
+            console.error('Error leaving session:', error);
+        } finally {
+            this.currentSessionId = null;
+            localStorage.removeItem('swf_session_id');
+            localStorage.removeItem('swf_user_name');
+            this.stopVoice();
+            this.stopScreenShare();
+            // Clear peer connections
+            if (this.webrtc) {
+                this.webrtc.stopCall();
+            }
+        }
     }
 
     /**
      * Start voice chat
      */
-    async startVoice(): Promise<MediaStream | void> {
+    public async startVoice(): Promise<MediaStream | void> {
         if (!this.webrtc) {
-            console.warn('WebRTC not enabled in config');
-            return;
+            this.webrtc = new WebRTCManager(this.ws, this.events, {
+                enableAudio: true,
+                enableVideo: this.config.enableVideo || false
+            });
         }
         return this.webrtc.startCall();
     }
@@ -177,8 +248,15 @@ export class ShopWithFriends {
     /**
      * Stop voice chat
      */
-    stopVoice(): void {
+    public stopVoice(): void {
         this.webrtc?.stopCall();
+    }
+
+    /**
+     * Stop screen sharing
+     */
+    public stopScreenShare(): void {
+        this.webrtc?.stopScreenShare();
     }
 
     /**
@@ -192,12 +270,6 @@ export class ShopWithFriends {
         return this.webrtc.startScreenShare();
     }
 
-    /**
-     * Stop screen sharing
-     */
-    stopScreenShare(): void {
-        this.webrtc?.stopScreenShare();
-    }
 
     /**
      * Toggle mute
@@ -209,8 +281,24 @@ export class ShopWithFriends {
     /**
      * Toggle video
      */
-    setVideo(enabled: boolean): void {
-        this.webrtc?.toggleVideo(enabled);
+    public async setVideo(enabled: boolean): Promise<void> {
+        if (!this.webrtc) {
+            this.webrtc = new WebRTCManager(this.ws, this.events, {
+                enableAudio: this.config.enableVoice || true,
+                enableVideo: true
+            });
+        }
+
+        // If enabling video and we don't have a stream yet, start the call
+        if (enabled && !this.webrtc.getAudioLevel('local')) {
+             try {
+                 await this.webrtc.startCall();
+             } catch (e) {
+                 console.error("Failed to start call for video", e);
+             }
+        }
+
+        this.webrtc.toggleVideo(enabled);
     }
 
     /**
@@ -272,6 +360,24 @@ export class ShopWithFriends {
     }
 
     /**
+     * Send a chat message
+     */
+    public sendChatMessage(message: string): void {
+        if (!this.currentSessionId) {
+            console.warn('Not in a session');
+            return;
+        }
+
+        this.ws.send({
+            type: 'SYNC_EVENT',
+            payload: {
+                eventType: 'CHAT_MESSAGE',
+                message
+            }
+        });
+    }
+
+    /**
      * Send a reaction
      */
     sendReaction(reaction: string): void {
@@ -290,16 +396,41 @@ export class ShopWithFriends {
     }
 
     /**
+     * Sync cursor position
+     */
+    syncCursor(x: number, y: number): void {
+        if (!this.currentSessionId) return;
+
+        this.ws.send({
+            type: 'SYNC_EVENT',
+            payload: {
+                eventType: 'CURSOR_MOVE',
+                x,
+                y,
+                pageX: window.scrollX,
+                pageY: window.scrollY,
+                width: window.innerWidth,
+                height: window.innerHeight
+            }
+        });
+    }
+
+    /**
      * Request scroll sync
      */
-    syncScroll(scrollTop: number): void {
+    public syncScroll(scrollTop: number, scrollLeft: number = 0): void {
         if (!this.currentSessionId) return;
 
         this.ws.send({
             type: 'SYNC_EVENT',
             payload: {
                 eventType: 'SCROLL_REQUEST',
-                scrollTop
+                scrollTop,
+                scrollLeft,
+                docHeight: document.documentElement.scrollHeight,
+                docWidth: document.documentElement.scrollWidth,
+                viewHeight: window.innerHeight,
+                viewWidth: window.innerWidth
             }
         });
     }
@@ -307,14 +438,14 @@ export class ShopWithFriends {
     /**
      * Event listener
      */
-    on(event: string, callback: Function): void {
+    public on(event: string, callback: Function): void {
         this.events.on(event, callback);
     }
 
     /**
      * Remove event listener
      */
-    off(event: string, callback: Function): void {
+    public off(event: string, callback: Function): void {
         this.events.off(event, callback);
     }
 
@@ -335,8 +466,15 @@ export class ShopWithFriends {
     /**
      * Check if in a session
      */
-    isInSession(): boolean {
+    public isInSession(): boolean {
         return this.currentSessionId !== null;
+    }
+
+    /**
+     * Check if connected to WebSocket server
+     */
+    public isConnected(): boolean {
+        return this.ws.isConnected();
     }
 
     /**
@@ -356,6 +494,11 @@ export class ShopWithFriends {
     private setupEventHandlers(): void {
         // Forward WebSocket events to SDK events
         this.events.on('ws:participantJoined', (data: any) => {
+            // Automatically connect to the new peer via WebRTC if enabled
+            if (this.webrtc && (this.config.enableVoice || this.config.enableVideo)) {
+                this.webrtc.connectToPeer(data.userId);
+            }
+
             if (this.config.onParticipantJoined) {
                 this.config.onParticipantJoined(data);
             }
@@ -371,12 +514,51 @@ export class ShopWithFriends {
             if (this.config.onSync) {
                 this.config.onSync(data);
             }
+
+            // Forward specific sync events for UIManager and other listeners
+            if (data.eventType) {
+                this.events.emit(`sync:${data.eventType.toLowerCase()}`, data);
+            }
         });
 
         this.events.on('ws:error', (error: any) => {
             if (this.config.onError) {
                 this.config.onError(error);
             }
+        });
+
+        this.events.on('ws:connected', () => {
+            if (this.isInitialized && this.currentSessionId) {
+                this.isReconnecting = true;
+                this.ws.waitForClientId().then(id => {
+                    this.clientId = id;
+                    this.handleAutoRejoin();
+                    this.isReconnecting = false;
+                });
+            }
+        });
+
+        // Forward WebRTC events
+        const webrtcEvents = [
+            'webrtc:localStream',
+            'webrtc:remoteStream',
+            'webrtc:callStarted',
+            'webrtc:callEnded',
+            'webrtc:peerConnected',
+            'webrtc:peerDisconnected',
+            'webrtc:stats',
+            'webrtc:error',
+            'webrtc:audioLevel',
+            'webrtc:audioToggled',
+            'webrtc:videoToggled'
+        ];
+
+        webrtcEvents.forEach(event => {
+            this.events.on(event, (data: any) => {
+                // Already emitted by WebRTCManager on the same emitter,
+                // but if we ever use separate emitters we'd proxy here.
+                // For now, UIManager already listens to this.sdk which uses this.events.
+            });
         });
     }
 
@@ -386,8 +568,23 @@ export class ShopWithFriends {
         const sessionId = params.get('join');
 
         if (sessionId) {
-            console.log('Auto-joining session from URL:', sessionId);
-            this.joinSession(sessionId);
+            console.log('Found session ID in URL:', sessionId);
+            if (this.ui) {
+                this.ui.showJoinModal(sessionId);
+            } else {
+                this.joinSession(sessionId);
+            }
+            return;
+        }
+
+        // Check for persisted session
+        const persistedSessionId = localStorage.getItem('swf_session_id');
+        if (persistedSessionId) {
+            console.log('Restoring persisted session:', persistedSessionId);
+            const userName = localStorage.getItem('swf_user_name');
+            this.joinSession(persistedSessionId, userName || undefined).catch(() => {
+                localStorage.removeItem('swf_session_id');
+            });
         }
     }
 }

@@ -15,6 +15,8 @@ export class WebSocketClient {
     private isConnecting = false;
     private clientIdPromise: Promise<string> | null = null;
     private clientIdResolve: ((id: string) => void) | null = null;
+    public clientId: string | null = null;
+    public apiKey: string | null = null;
 
     constructor(url: string, events: EventEmitter) {
         this.url = url;
@@ -77,11 +79,9 @@ export class WebSocketClient {
      * Wait for CLIENT_ID message from server
      */
     waitForClientId(): Promise<string> {
-        if (!this.clientIdPromise) {
-            this.clientIdPromise = new Promise((resolve) => {
-                this.clientIdResolve = resolve;
-            });
-        }
+        this.clientIdPromise = new Promise((resolve) => {
+            this.clientIdResolve = resolve;
+        });
         return this.clientIdPromise;
     }
 
@@ -122,8 +122,10 @@ export class WebSocketClient {
 
             switch (message.type) {
                 case 'CLIENT_ID':
+                    this.clientId = message.payload.clientId;
                     if (this.clientIdResolve) {
                         this.clientIdResolve(message.payload.clientId);
+                        this.clientIdResolve = null;
                     }
                     break;
 

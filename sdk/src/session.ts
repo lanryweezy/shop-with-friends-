@@ -38,7 +38,10 @@ export class SessionManager {
             // Send create session message
             this.ws.send({
                 type: 'CREATE_SESSION',
-                payload: { metadata }
+                payload: {
+                    metadata,
+                    apiKey: this.ws.apiKey
+                }
             });
         });
     }

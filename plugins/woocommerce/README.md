@@ -214,6 +214,13 @@ add_filter('swf_should_load', function($should_load, $product_id) {
 
 ## Changelog
 
+### Version 1.1.2 (2025-04-15)
+- ✨ Polished for mass adoption
+- 🔄 Automated session re-join after connection loss
+- 📱 Improved 'Follow' mode UX (auto-pause on scroll)
+- 🔌 Centralized API Key validation
+- ✅ Optimized performance and reliability
+
 ### Version 1.0.0 (2025-01-30)
 - ✨ Initial release
 - ✅ Real-time navigation sync
