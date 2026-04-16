@@ -130,12 +130,12 @@ app.get('/api/sessions/:sessionId', async (req, res) => {
 });
 
 /**
- * GET /api/stats/:apiKey
- * Get usage statistics for an API key
+ * GET /api/stats
+ * Get usage statistics for an API key (Prefer x-api-key header)
  */
-app.get('/api/stats/:apiKey', async (req, res) => {
+app.get('/api/stats', async (req, res) => {
     try {
-        const { apiKey } = req.params;
+        const apiKey = req.headers['x-api-key'] || req.query.apiKey;
 
         if (!isValidApiKey(apiKey)) {
             return res.status(401).json({ error: 'Invalid API Key' });
