@@ -13,6 +13,11 @@ export class UIManager {
   private cartContainer: HTMLDivElement | null = null;
   private toastContainer: HTMLDivElement | null = null;
   private isFollowing: boolean = false;
+  private isHandlingRemoteScroll: boolean = false;
+  private participants: Map<string, string> = new Map(); // userId -> userName
+  private remoteCursors: Map<string, HTMLDivElement> = new Map(); // userId -> cursor element
+  private remoteVideos: Map<string, HTMLVideoElement> = new Map(); // userId -> video element
+  private labels: any;
   private participants: Map<string, string> = new Map(); // userId -> userName
   private remoteCursors: Map<string, HTMLDivElement> = new Map(); // userId -> cursor element
   private remoteVideos: Map<string, HTMLVideoElement> = new Map(); // userId -> video element

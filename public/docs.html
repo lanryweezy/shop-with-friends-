@@ -367,6 +367,7 @@
 
                 <div class="feature-card">
                     <div class="feature-icon">🖱️</div>
+                    <div class="feature-title">Live Cursors</div>
                     <div class="feature-title">Cursor Tracking</div>
                     <div class="feature-desc">See where your friends are looking and clicking in real-time</div>
                 </div>
@@ -423,9 +424,12 @@ await swf.init();</code></pre>
 
             <div class="cta-section">
                 <h3 style="margin: 0 0 0.5rem 0; color: white;">Ready to Get Started?</h3>
-                <p style="color: #b0b0b0; margin-bottom: 0;">Contact us for API access and start adding collaborative
-                    shopping to your store today.</p>
-                <a href="mailto:lanryweezy@gmail.com" class="cta-button">Request API Key</a>
+                <p style="color: #b0b0b0; margin-bottom: 1rem;">Contact us for a dedicated API key or use our public preview key for testing.</p>
+                <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px dashed rgba(255,255,255,0.1);">
+                    <p style="font-size: 0.8rem; color: #6b7280; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">Public Preview Key</p>
+                    <code style="font-size: 1.2rem; color: #a78bfa;">public-preview-2025</code>
+                </div>
+                <a href="mailto:lanryweezy@gmail.com" class="cta-button">Request Dedicated Key</a>
             </div>
 
             <!-- Features -->
@@ -542,7 +546,7 @@ ws.onopen = () => {
                 <p style="margin-top: 0.5rem; margin-bottom: 0;">Create a new session programmatically.</p>
             </div>
 
-            <pre><code>POST https://ap i.shopwithfriends.io/api/sessions/create
+            <pre><code>POST https://api.shopwithfriends.io/api/sessions/create
 Content-Type: application/json
 
 {

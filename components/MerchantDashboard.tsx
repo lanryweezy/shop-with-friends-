@@ -90,6 +90,82 @@ const MerchantDashboard: React.FC = () => {
                 </div>
             )}
 
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-black/20 border border-white/5 p-6 rounded-2xl">
+                            <div className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-2">Total Sessions</div>
+                            <div className="text-4xl font-bold text-white">{stats?.session_created || 0}</div>
+                        </div>
+                        <div className="bg-black/20 border border-white/5 p-6 rounded-2xl">
+                            <div className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-2">Active Shoppers</div>
+                            <div className="text-4xl font-bold text-white">{stats?.participant_joined || 0}</div>
+                        </div>
+                        <div className="bg-black/20 border border-white/5 p-6 rounded-2xl">
+                            <div className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-2">Social Events</div>
+                            <div className="text-4xl font-bold text-purple-400">{stats?.total_events || 0}</div>
+                        </div>
+                    </div>
+
+                    {stats && (
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-white font-bold flex items-center gap-2">
+                                    <Code2 size={18} className="text-purple-400" />
+                                    Quick Integration Snippet
+                                </h3>
+                                <button
+                                    onClick={copySnippet}
+                                    className="flex items-center gap-2 text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors"
+                                >
+                                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                                    {copied ? 'Copied!' : 'Copy Snippet'}
+                                </button>
+                            </div>
+                            <pre className="bg-black/40 rounded-xl p-4 text-[11px] font-mono text-gray-300 overflow-x-auto border border-white/5">
+                                {`<!-- Add to your product pages -->
+<script src="https://unpkg.com/shop-with-friends@1.1.2/dist/shop-with-friends.js" type="module"></script>
+<script type="module">
+  import { ShopWithFriends } from 'https://unpkg.com/shop-with-friends@1.1.2/dist/shop-with-friends.js';
+
+  const swf = new ShopWithFriends({
+    apiKey: '${apiKey || 'your_api_key'}',
+    productId: '12345' // Replace with your dynamic ID
+  });
+
+  await swf.init();
+</script>`}
+                            </pre>
+                        </div>
+                    )}
+                </div>
+
+                <div className="bg-black/20 border border-white/5 p-6 rounded-2xl">
+                    <h3 className="text-white font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
+                        Live Feed
+                    </h3>
+                    <div className="space-y-4">
+                        {stats ? (
+                            <>
+                                <div className="flex items-center gap-3 text-sm">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                                    <span className="text-gray-300">API Key Active</span>
+                                </div>
+                                <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                                    <p className="text-xs text-gray-500 mb-1">Last Sync</p>
+                                    <p className="text-sm text-white font-mono">{new Date().toLocaleTimeString()}</p>
+                                </div>
+                                <p className="text-xs text-gray-500 leading-relaxed">
+                                    Usage is tracked in real-time. Ensure your CORS settings allow requests from your production domain.
+                                </p>
+                            </>
+                        ) : (
+                            <div className="py-12 text-center text-gray-600">
+                                <Activity className="mx-auto mb-2 opacity-10" size={32} />
+                                <p className="text-xs">Waiting for connection...</p>
+                            </div>
+                        )}
+                    </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-black/20 border border-white/5 p-6 rounded-2xl">
                     <div className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-2">Total Sessions</div>

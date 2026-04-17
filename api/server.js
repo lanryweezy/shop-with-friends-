@@ -30,8 +30,29 @@ const corsOrigins = process.env.CORS_ORIGINS?.split(',') || [
     'https://shop-with-friends.vercel.app',
     'https://shop-with-friends-git-main-lanryweezys-projects.vercel.app'
 ];
+
 app.use(cors({
-    origin: corsOrigins,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        const isAllowed = corsOrigins.some(allowedOrigin => {
+            if (allowedOrigin === '*') return true;
+            if (allowedOrigin.includes('*')) {
+                const pattern = new RegExp('^' + allowedOrigin.replace(/\*/g, '.*') + '$');
+                return pattern.test(origin);
+            }
+            return allowedOrigin === origin;
+        });
+
+        if (isAllowed || process.env.NODE_ENV !== 'production') {
+            callback(null, true);
+        } else {
+            // For mass adoption, we could log unauthorized origins to help with onboarding
+            console.warn(`[CORS] Blocked origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 

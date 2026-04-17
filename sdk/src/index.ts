@@ -527,6 +527,17 @@ export class ShopWithFriends {
             }
         });
 
+        this.events.on('ws:connected', () => {
+            if (this.isInitialized && this.currentSessionId) {
+                this.isReconnecting = true;
+                this.ws.waitForClientId().then(id => {
+                    this.clientId = id;
+                    this.handleAutoRejoin();
+                    this.isReconnecting = false;
+                });
+            }
+        });
+
         // Forward WebRTC events
         const webrtcEvents = [
             'webrtc:localStream',

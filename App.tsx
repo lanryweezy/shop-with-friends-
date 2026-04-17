@@ -225,7 +225,7 @@ const DemoEnvironment = () => {
       <div className="flex flex-col md:flex-row gap-4 items-center justify-center max-w-[900px] w-full px-4">
 
         {/* DEVICE A FRAME (Tola) */}
-        <div className="relative scale-[0.85] md:scale-100 origin-top">
+        <div className="relative origin-top transition-all duration-500">
           <DeviceFrame name="Tola" isOnline={true}>
             <StorePage
               currentView={viewA}
@@ -279,7 +279,7 @@ const DemoEnvironment = () => {
         </div>
 
         {/* DEVICE B FRAME (Chidi) */}
-        <div className="relative scale-[0.85] md:scale-100 origin-top md:mt-0 -mt-20">
+        <div className="relative origin-top md:mt-0 transition-all duration-500">
           <DeviceFrame name="Chidi" isOnline={true}>
             <StorePage
               currentView={viewB}
@@ -397,32 +397,38 @@ const App = () => {
 
       {/* Hero */}
       {/* Hero */}
-      <section className="relative pt-20 pb-20 md:pt-32 md:pb-32 px-4 md:px-6 overflow-hidden">
-        {/* Background Image */}
+      <section className="relative pt-24 pb-24 md:pt-40 md:pb-40 px-4 md:px-6 overflow-hidden">
+        {/* Background Image with improved contrast and effect */}
         <div className="absolute inset-0 z-0">
           <img
             src="/images/hero-split.png"
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-40 mix-blend-luminosity"
             alt="Friends connecting digitally across locations"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#0a0a0a]/70 to-[#0a0a0a]"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-[#0a0a0a]"></div>
+          {/* Animated Glows - Restricted for better performance */}
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] animate-pulse will-change-transform"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] animate-pulse delay-700 will-change-transform"></div>
         </div>
 
-        <div className="relative z-10 text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-purple-300 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
-            Now available for public preview
+        <div className="relative z-10 text-center max-w-5xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-purple-400 mb-10 animate-in fade-in slide-in-from-top-4 duration-700 backdrop-blur-md shadow-lg">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+            </span>
+            Available for Public Preview
           </div>
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 md:mb-8 bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-6 duration-1000 drop-shadow-2xl">
-            The Social Spine of <br /> Commerce.
+          <h1 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter mb-8 bg-gradient-to-b from-white via-white to-white/30 bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-6 duration-1000 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] leading-[0.9]">
+            The Social Spine <br /> of Commerce.
           </h1>
-          <p className="text-lg sm:text-xl text-gray-200 max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100 drop-shadow-lg font-medium px-4">
-            Simple API that lets two people shop together inside any platform. Oceans apart, but scrolling as one.
+          <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100 font-medium px-4">
+            A simple API that turns your store into a shared space. <span className="text-white">Oceans apart, but scrolling as one.</span>
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200 px-4">
             <button
               onClick={scrollToDemo}
-              className="w-full sm:w-auto bg-white text-black px-8 py-4 rounded-full font-semibold hover:bg-gray-200 transition-all flex items-center justify-center gap-2 group shadow-[0_0_20px_rgba(255,255,255,0.3)] touch-manipulation"
+              className="w-full sm:w-auto bg-white text-black px-10 py-5 rounded-full font-bold hover:bg-gray-200 transition-all flex items-center justify-center gap-2 group shadow-[0_20px_40px_-15px_rgba(255,255,255,0.3)] hover:-translate-y-1 active:translate-y-0"
             >
               Experience Demo <ArrowDown size={18} className="group-hover:translate-y-1 transition-transform" />
             </button>
@@ -448,33 +454,62 @@ const App = () => {
       </section>
 
       {/* Benefits for Store Owners - RIGHT AFTER DEMO */}
-      <section className="py-16 md:py-24 px-4 md:px-6 bg-white/5 border-y border-white/10">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center mb-12 md:mb-20">
+      <section className="py-24 md:py-32 px-4 md:px-6 bg-[#0a0a0a] border-y border-white/5 relative overflow-hidden">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-purple-900/10 via-transparent to-transparent opacity-50"></div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">
             <div className="text-left">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight">
-                Let Your Customers Bring<br />Their Friends to Your Shop
+              <h2 className="text-4xl md:text-6xl font-black mb-8 leading-[1.1] tracking-tighter">
+                Let Your Customers Bring<br /><span className="text-purple-500">Their Friends</span> to Your Shop.
               </h2>
-              <p className="text-base md:text-lg text-gray-400 leading-relaxed mb-6 md:mb-8">
-                Turn browsing into conversation. Turn hesitation into confidence. Turn solo shopping into social experiences that drive sales.
+              <p className="text-lg md:text-xl text-gray-400 leading-relaxed mb-10 max-w-xl">
+                Turn browsing into conversation. Turn hesitation into confidence. Social shopping is no longer an option—it's the new standard for modern commerce.
               </p>
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-3">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="w-12 h-12 rounded-full border-2 border-[#0a0a0a] bg-gray-800 overflow-hidden">
+                      <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="User" className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-gray-500 font-medium">Join 500+ merchants building social stores</p>
+              </div>
             </div>
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl opacity-30 blur-lg group-hover:opacity-50 transition-opacity duration-500"></div>
-              <img
-                src="/images/shopping-friends.png"
-                alt="Friends shopping together"
-                className="relative rounded-2xl shadow-2xl w-full object-cover transform rotate-2 group-hover:rotate-0 transition-all duration-500 border border-white/10"
-              />
+              <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-[2rem] opacity-30 blur-2xl group-hover:opacity-60 transition-all duration-700"></div>
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl transform transition-all duration-700 group-hover:scale-[1.02]">
+                <img
+                  src="/images/shopping-friends.png"
+                  alt="Friends shopping together"
+                  className="w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/10 backdrop-blur-md rounded-xl border border-white/10">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <Zap size={20} className="text-green-400" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Live Activity</p>
+                        <p className="text-sm font-bold">48 pairs shopping together right now</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 relative">
-            {/* Animated Background Mesh */}
-            <div className="absolute inset-0 -z-10 overflow-hidden rounded-3xl">
-              <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob"></div>
-              <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000"></div>
-              <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000"></div>
+            {/* Animated Background Mesh - Only on larger screens for perf */}
+            <div className="absolute inset-0 -z-10 overflow-hidden rounded-3xl hidden md:block">
+              <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob will-change-transform"></div>
+              <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000 will-change-transform"></div>
+              <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-4000 will-change-transform"></div>
             </div>
 
             {/* Card 1 - Higher Conversion */}
@@ -548,27 +583,49 @@ const App = () => {
 
 
       {/* How It Works - Simple */}
-      <section className="py-16 md:py-24 px-4 md:px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8 md:mb-12">
-            Simple for Your Customers
-          </h2>
+      <section className="py-32 px-4 md:px-6 relative">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight">
+              Simple for Your Customers.
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              We've removed all friction. No apps to download, no accounts to create. Just pure shared shopping.
+            </p>
+          </div>
 
-          <div className="grid md:grid-cols-3 gap-8 md:gap-12">
-            <div>
-              <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-xl mx-auto mb-4">1</div>
-              <h3 className="font-semibold text-lg mb-2">Click "Shop Together"</h3>
-              <p className="text-gray-400 text-sm">One button on your product page. That's it.</p>
+          <div className="grid md:grid-cols-3 gap-12 relative">
+            {/* Connection Line (Desktop) */}
+            <div className="hidden md:block absolute top-12 left-[15%] right-[15%] h-[2px] bg-gradient-to-r from-purple-500/0 via-purple-500/40 to-purple-500/0 -z-10"></div>
+
+            <div className="text-center group">
+              <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 transition-all duration-500 group-hover:bg-purple-500/20 group-hover:border-purple-500/40 group-hover:-translate-y-2">
+                <span className="text-3xl font-black text-purple-500">01</span>
+              </div>
+              <h3 className="font-bold text-xl mb-4">Click "Shop Together"</h3>
+              <p className="text-gray-400 leading-relaxed">
+                One button on your product page. A single click initiates the secure session.
+              </p>
             </div>
-            <div>
-              <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-xl mx-auto mb-4">2</div>
-              <h3 className="font-semibold text-lg mb-2">Share the Link</h3>
-              <p className="text-gray-400 text-sm">Send to a friend via WhatsApp, text, anywhere.</p>
+
+            <div className="text-center group">
+              <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 transition-all duration-500 group-hover:bg-blue-500/20 group-hover:border-blue-500/40 group-hover:-translate-y-2">
+                <span className="text-3xl font-black text-blue-500">02</span>
+              </div>
+              <h3 className="font-bold text-xl mb-4">Share the Link</h3>
+              <p className="text-gray-400 leading-relaxed">
+                Customers send a magic link via WhatsApp, iMessage, or Instagram DM.
+              </p>
             </div>
-            <div>
-              <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold text-xl mx-auto mb-4">3</div>
-              <h3 className="font-semibold text-lg mb-2">Shop & Talk Together</h3>
-              <p className="text-gray-400 text-sm">Voice starts automatically. Browse, react, decide together.</p>
+
+            <div className="text-center group">
+              <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 transition-all duration-500 group-hover:bg-pink-500/20 group-hover:border-pink-500/40 group-hover:-translate-y-2">
+                <span className="text-3xl font-black text-pink-500">03</span>
+              </div>
+              <h3 className="font-bold text-xl mb-4">Synced in Seconds</h3>
+              <p className="text-gray-400 leading-relaxed">
+                Voice starts automatically. Browse, react, and decide together in real-time.
+              </p>
             </div>
           </div>
         </div>
