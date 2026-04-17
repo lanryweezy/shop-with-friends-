@@ -10,14 +10,7 @@ const VALID_API_KEYS = new Set(process.env.API_KEYS?.split(',') || ['demo-key-12
  * @returns {boolean}
  */
 export function isValidApiKey(apiKey) {
-    if (!apiKey) return false;
-
-    // Support demo/trial keys for mass adoption preview
-    if (apiKey.startsWith('trial_') || apiKey === 'public-preview-2025') {
-        return true;
-    }
-
-    return VALID_API_KEYS.has(apiKey);
+    return apiKey && VALID_API_KEYS.has(apiKey);
 }
 
 /**

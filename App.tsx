@@ -425,19 +425,19 @@ const App = () => {
           <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100 font-medium px-4">
             A simple API that turns your store into a shared space. <span className="text-white">Oceans apart, but scrolling as one.</span>
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200 px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-200 px-4">
             <button
               onClick={scrollToDemo}
               className="w-full sm:w-auto bg-white text-black px-10 py-5 rounded-full font-bold hover:bg-gray-200 transition-all flex items-center justify-center gap-2 group shadow-[0_20px_40px_-15px_rgba(255,255,255,0.3)] hover:-translate-y-1 active:translate-y-0"
             >
-              Experience Demo <ArrowDown size={20} className="group-hover:translate-y-1 transition-transform" />
+              Experience Demo <ArrowDown size={18} className="group-hover:translate-y-1 transition-transform" />
             </button>
             <a
               href="/sdk/test-prod.html"
               target="_blank"
-              className="w-full sm:w-auto bg-black/40 backdrop-blur-md border border-white/10 text-white px-10 py-5 rounded-full font-bold hover:bg-white/10 hover:border-white/30 transition-all flex items-center justify-center gap-2 group shadow-xl"
+              className="w-full sm:w-auto bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-semibold hover:bg-white/20 transition-all flex items-center justify-center gap-2"
             >
-              Explore the SDK <Globe size={20} className="group-hover:rotate-12 transition-transform" />
+              Try SDK v1.1.2 <Globe size={18} />
             </a>
           </div>
         </div>

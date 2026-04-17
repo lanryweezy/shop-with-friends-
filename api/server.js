@@ -19,6 +19,9 @@ const wsHandler = new WebSocketHandler(sessionManager);
 // Middleware
 app.use(express.json());
 
+// API Keys for mass adoption (demo mode uses any key)
+const VALID_API_KEYS = new Set(process.env.API_KEYS?.split(',') || ['demo-key-123']);
+
 // CORS configuration
 const corsOrigins = process.env.CORS_ORIGINS?.split(',') || [
     'http://localhost:3000',
@@ -81,14 +84,14 @@ app.post('/api/sessions/create', async (req, res) => {
         }
 
         // Validate API Key
-        if (!isValidApiKey(apiKey)) {
+        if (!apiKey || !VALID_API_KEYS.has(apiKey)) {
             return res.status(401).json({ error: 'Invalid API Key' });
         }
 
         const session = await sessionManager.createSession(userId, {
             ...metadata,
             hostName: userName,
-            apiKey: apiKey
+            apiKey: apiKey || 'demo'
         });
 
         const inviteLink = sessionManager.generateInviteLink(session.id);
@@ -130,12 +133,12 @@ app.get('/api/sessions/:sessionId', async (req, res) => {
 });
 
 /**
- * GET /api/stats
- * Get usage statistics for an API key (Prefer x-api-key header)
+ * GET /api/stats/:apiKey
+ * Get usage statistics for an API key
  */
-app.get('/api/stats', async (req, res) => {
+app.get('/api/stats/:apiKey', async (req, res) => {
     try {
-        const apiKey = req.headers['x-api-key'] || req.query.apiKey;
+        const { apiKey } = req.params;
 
         if (!isValidApiKey(apiKey)) {
             return res.status(401).json({ error: 'Invalid API Key' });

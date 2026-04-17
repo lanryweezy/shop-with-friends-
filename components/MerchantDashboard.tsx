@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, ShieldCheck, Activity, Key, Loader2, AlertCircle, Copy, Check, Code2 } from 'lucide-react';
+import { BarChart3, ShieldCheck, Activity, Key, Loader2, AlertCircle } from 'lucide-react';
 
 const MerchantDashboard: React.FC = () => {
     const [apiKey, setApiKey] = useState('');
@@ -7,7 +7,6 @@ const MerchantDashboard: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [autoRefresh, setAutoRefresh] = useState(false);
-    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -19,24 +18,6 @@ const MerchantDashboard: React.FC = () => {
         return () => clearInterval(interval);
     }, [autoRefresh, apiKey, error]);
 
-    const copySnippet = () => {
-        const snippet = `<!-- Add to your product pages -->
-<script src="https://unpkg.com/shop-with-friends@1.1.2/dist/shop-with-friends.js" type="module"></script>
-<script type="module">
-  import { ShopWithFriends } from 'https://unpkg.com/shop-with-friends@1.1.2/dist/shop-with-friends.js';
-
-  const swf = new ShopWithFriends({
-    apiKey: '${apiKey || 'YOUR_API_KEY'}',
-    productId: 'PRODUCT_ID' // Dynamically set this
-  });
-
-  await swf.init();
-</script>`;
-        navigator.clipboard.writeText(snippet);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
     const fetchStats = async (isBackground = false) => {
         if (!apiKey) return;
         if (!isBackground) setLoading(true);
@@ -44,11 +25,7 @@ const MerchantDashboard: React.FC = () => {
         try {
             // Use relative URL or env var for production readiness
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-            const response = await fetch(`${baseUrl}/api/stats`, {
-                headers: {
-                    'x-api-key': apiKey
-                }
-            });
+            const response = await fetch(`${baseUrl}/api/stats/${apiKey}`);
             if (!response.ok) {
                 if (response.status === 401) throw new Error('Invalid API Key');
                 throw new Error('Failed to fetch statistics');
@@ -65,24 +42,6 @@ const MerchantDashboard: React.FC = () => {
 
     return (
         <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 max-w-4xl mx-auto my-12">
-            <div className="mb-8 p-4 bg-purple-500/10 border border-purple-500/20 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center shrink-0">
-                        <Key className="text-white" size={20} />
-                    </div>
-                    <div>
-                        <p className="text-white font-bold">Need an API Key?</p>
-                        <p className="text-gray-400 text-sm">Join our public preview to start building.</p>
-                    </div>
-                </div>
-                <a
-                    href="mailto:lanryweezy@gmail.com?subject=API Key Request - Shop with Friends&body=Hi, I'd like to request an API key for my store: [Your Store URL]"
-                    className="bg-white text-black px-6 py-2 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all shrink-0"
-                >
-                    Get Instant Access
-                </a>
-            </div>
-
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
                 <div>
                     <h2 className="text-3xl font-bold text-white flex items-center gap-3">
@@ -207,6 +166,18 @@ const MerchantDashboard: React.FC = () => {
                             </div>
                         )}
                     </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-black/20 border border-white/5 p-6 rounded-2xl">
+                    <div className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-2">Total Sessions</div>
+                    <div className="text-4xl font-bold text-white">{stats?.session_created || 0}</div>
+                </div>
+                <div className="bg-black/20 border border-white/5 p-6 rounded-2xl">
+                    <div className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-2">Active Shoppers</div>
+                    <div className="text-4xl font-bold text-white">{stats?.participant_joined || 0}</div>
+                </div>
+                <div className="bg-black/20 border border-white/5 p-6 rounded-2xl">
+                    <div className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-2">Total Social Events</div>
+                    <div className="text-4xl font-bold text-purple-400">{stats?.total_events || 0}</div>
                 </div>
             </div>
 

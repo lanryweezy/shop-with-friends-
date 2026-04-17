@@ -18,6 +18,9 @@ export class UIManager {
   private remoteCursors: Map<string, HTMLDivElement> = new Map(); // userId -> cursor element
   private remoteVideos: Map<string, HTMLVideoElement> = new Map(); // userId -> video element
   private labels: any;
+  private participants: Map<string, string> = new Map(); // userId -> userName
+  private remoteCursors: Map<string, HTMLDivElement> = new Map(); // userId -> cursor element
+  private remoteVideos: Map<string, HTMLVideoElement> = new Map(); // userId -> video element
 
   constructor(sdk: ShopWithFriends, config: ShopWithFriendsConfig) {
     this.sdk = sdk;
@@ -142,13 +145,13 @@ export class UIManager {
       <div class="swf-modal-content">
         <div class="swf-modal-header">
           <div class="swf-modal-icon">👋</div>
-          <h3>${this.labels.joinFriend}</h3>
+          <h3>Join Friend</h3>
         </div>
-        <p>${this.labels.enterName}</p>
+        <p>Your friend invited you to shop together! Enter your name to join:</p>
 
         <div class="swf-join-container">
           <input type="text" placeholder="Your Name" class="swf-name-input" id="swf-name-input" />
-          <button class="swf-join-btn" id="swf-join-btn">${this.labels.joinSession}</button>
+          <button class="swf-join-btn" id="swf-join-btn">Join Session</button>
         </div>
       </div>
     `;
@@ -217,11 +220,11 @@ export class UIManager {
       this.cartContainer.className = 'swf-cart-container swf-hidden';
       this.cartContainer.innerHTML = `
           <div class="swf-cart-header">
-              <span>${this.labels.sharedCart}</span>
+              <span>Shared Cart</span>
               <button class="swf-cart-close" id="swf-cart-close-btn">&times;</button>
           </div>
           <div class="swf-cart-items" id="swf-cart-items">
-              <div class="swf-cart-empty">${this.labels.cartEmpty}</div>
+              <div class="swf-cart-empty">Your friend's cart is empty</div>
           </div>
       `;
       this.container?.appendChild(this.cartContainer);
@@ -236,12 +239,12 @@ export class UIManager {
     this.chatContainer.className = 'swf-chat-container swf-hidden';
     this.chatContainer.innerHTML = `
         <div class="swf-chat-header">
-            <span>${this.labels.chat}</span>
+            <span>Chat</span>
             <button class="swf-chat-close" id="swf-chat-close-btn">&times;</button>
         </div>
         <div class="swf-chat-messages" id="swf-chat-messages"></div>
         <div class="swf-chat-input-container">
-            <input type="text" placeholder="${this.labels.typeMessage}" class="swf-chat-input" id="swf-chat-input" />
+            <input type="text" placeholder="Type a message..." class="swf-chat-input" id="swf-chat-input" />
         </div>
     `;
     this.container?.appendChild(this.chatContainer);
@@ -270,7 +273,7 @@ export class UIManager {
     this.videoContainer.className = 'swf-video-container swf-hidden';
     this.videoContainer.innerHTML = `
         <div class="swf-video-header">
-            <span>${this.labels.videoChat}</span>
+            <span>Video Chat</span>
             <button class="swf-video-minimize" id="swf-video-min-btn">&minus;</button>
         </div>
         <div class="swf-video-grid"></div>
@@ -339,7 +342,7 @@ export class UIManager {
               </svg>
             </button>
 
-            <button class="swf-control-btn ${this.config.enableVideo ? '' : 'swf-hidden'}" id="swf-video-btn" title="${this.labels.videoChat}">
+            <button class="swf-control-btn ${this.config.enableVideo ? '' : 'swf-hidden'}" id="swf-video-btn" title="Video Chat">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2z"></path>
                 <path d="m23 7-7 5 7 5"></path>
@@ -352,7 +355,7 @@ export class UIManager {
               </svg>
             </button>
 
-            <button class="swf-control-btn" id="swf-cart-btn" title="${this.labels.sharedCart}">
+            <button class="swf-control-btn" id="swf-cart-btn" title="Shared Cart">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="9" cy="21" r="1"></circle>
                 <circle cx="20" cy="21" r="1"></circle>
@@ -360,7 +363,7 @@ export class UIManager {
               </svg>
             </button>
 
-            <button class="swf-control-btn ${this.isFollowing ? 'swf-active' : ''}" id="swf-follow-btn" title="${this.labels.followFriend}">
+            <button class="swf-control-btn" id="swf-follow-btn" title="Follow Friend">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
@@ -402,10 +405,10 @@ export class UIManager {
           const btn = e.currentTarget as HTMLButtonElement;
           if (this.isFollowing) {
               btn.classList.add('swf-active');
-              this.showToast(this.labels.nowFollowing);
+              this.showToast('👀 Now following friend\'s view');
           } else {
               btn.classList.remove('swf-active');
-              this.showToast(this.labels.stoppedFollowing);
+              this.showToast('Stopped following');
           }
       });
       this.dock.querySelector('#swf-invite-more-btn')?.addEventListener('click', () => this.handleInviteClick());
@@ -547,7 +550,6 @@ export class UIManager {
     this.sdk.on('ws:participantLeft', (user: any) => {
       const name = this.participants.get(user.userId) || 'Friend';
       this.participants.delete(user.userId);
-      this.addChatMessage('System', `${name} ${this.labels.friendLeft}`, false, true);
       this.removeRemoteCursor(user.userId);
       this.updateDockContent();
     });
@@ -619,23 +621,15 @@ export class UIManager {
       if (!this.toastContainer) return;
       const toast = document.createElement('div');
       toast.className = 'swf-toast swf-toast-jump';
+      toast.innerHTML = `
+          <span>${sender} is viewing <strong>${data.productName || 'another product'}</strong></span>
+          <button class="swf-jump-btn">Jump to them</button>
+      `;
+      this.toastContainer.appendChild(toast);
 
-      const text = document.createElement('span');
-      text.textContent = `${sender} is viewing `;
-      const strong = document.createElement('strong');
-      strong.textContent = data.productName || 'another product';
-      text.appendChild(strong);
-
-      const btn = document.createElement('button');
-      btn.className = 'swf-jump-btn';
-      btn.textContent = this.labels.jumpToThem;
-      btn.addEventListener('click', () => {
+      toast.querySelector('.swf-jump-btn')?.addEventListener('click', () => {
           if (data.url) window.location.href = data.url;
       });
-
-      toast.appendChild(text);
-      toast.appendChild(btn);
-      this.toastContainer.appendChild(toast);
 
       setTimeout(() => {
           toast.classList.add('swf-toast-out');
@@ -672,7 +666,7 @@ export class UIManager {
   private handleRemoteScroll(data: any): void {
       // Logic to sync scroll position
       // We use a flag to prevent feedback loops
-      this.isHandlingRemoteScroll = true;
+      (window as any).swf_handling_remote_scroll = true;
 
       // Proportional scroll if document heights differ
       const myHeight = document.documentElement.scrollHeight - window.innerHeight;
@@ -688,7 +682,7 @@ export class UIManager {
       });
 
       setTimeout(() => {
-          this.isHandlingRemoteScroll = false;
+          (window as any).swf_handling_remote_scroll = false;
       }, 150);
   }
 
@@ -697,49 +691,29 @@ export class UIManager {
       if (!itemsContainer) return;
 
       if (!cart || cart.length === 0) {
-          itemsContainer.innerHTML = '';
-          const empty = document.createElement('div');
-          empty.className = 'swf-cart-empty';
-          empty.textContent = this.labels.cartEmpty;
-          itemsContainer.appendChild(empty);
+          itemsContainer.innerHTML = '<div class="swf-cart-empty">Your friend\'s cart is empty</div>';
           return;
       }
 
-      itemsContainer.innerHTML = '';
-      cart.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'swf-cart-item';
-
-          const name = document.createElement('div');
-          name.className = 'swf-item-name';
-          name.textContent = item.name || 'Product';
-
-          const meta = document.createElement('div');
-          meta.className = 'swf-item-meta';
-          meta.textContent = `${item.quantity || 1} x ${item.price || 'Price'}`;
-
-          div.appendChild(name);
-          div.appendChild(meta);
-          itemsContainer.appendChild(div);
-      });
+      itemsContainer.innerHTML = cart.map(item => `
+          <div class="swf-cart-item">
+              <div class="swf-item-details">
+                  <div class="swf-item-name">${item.name || 'Product'}</div>
+                  <div class="swf-item-meta">${item.quantity || 1} x ${item.price || 'Price'}</div>
+              </div>
+          </div>
+      `).join('');
   }
 
-  private addChatMessage(sender: string, text: string, isSelf: boolean, isSystem: boolean = false): void {
+  private addChatMessage(sender: string, text: string, isSelf: boolean): void {
     const messages = this.chatContainer?.querySelector('#swf-chat-messages');
     if (messages) {
         const div = document.createElement('div');
-        div.className = `swf-chat-message ${isSelf ? 'swf-chat-self' : ''} ${isSystem ? 'swf-chat-system' : ''}`;
-
-        const senderDiv = document.createElement('div');
-        senderDiv.className = 'swf-chat-sender';
-        senderDiv.textContent = sender;
-
-        const textDiv = document.createElement('div');
-        textDiv.className = 'swf-chat-text';
-        textDiv.textContent = text;
-
-        div.appendChild(senderDiv);
-        div.appendChild(textDiv);
+        div.className = `swf-chat-message ${isSelf ? 'swf-chat-self' : ''}`;
+        div.innerHTML = `
+            <div class="swf-chat-sender">${sender}</div>
+            <div class="swf-chat-text">${text}</div>
+        `;
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
     }
@@ -757,17 +731,7 @@ export class UIManager {
         video.className = 'swf-remote-video';
         video.autoplay = true;
         video.playsInline = true;
-
-        // Add name label to video
-        const container = document.createElement('div');
-        container.className = 'swf-remote-video-container';
-        const label = document.createElement('div');
-        label.className = 'swf-video-label';
-        label.textContent = this.participants.get(peerId) || 'Friend';
-
-        container.appendChild(video);
-        container.appendChild(label);
-        grid.appendChild(container);
+        grid.appendChild(video);
         this.remoteVideos.set(peerId, video);
     }
     video.srcObject = stream;
@@ -807,15 +771,7 @@ export class UIManager {
           if (!this.sdk.isInSession()) return;
 
           // Don't sync if we are currently handling a remote scroll
-          if (this.isHandlingRemoteScroll) return;
-
-          // If user manually scrolls while following, stop following
-          if (this.isFollowing) {
-              this.isFollowing = false;
-              const btn = this.dock?.querySelector('#swf-follow-btn');
-              if (btn) btn.classList.remove('swf-active');
-              this.showToast(this.labels.stoppedFollowing);
-          }
+          if ((window as any).swf_handling_remote_scroll) return;
 
           const now = Date.now();
           if (now - lastSend > throttle) {
@@ -832,23 +788,12 @@ export class UIManager {
     if (!cursor) {
       cursor = document.createElement('div');
       cursor.className = 'swf-remote-cursor';
-
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('width', '20');
-      svg.setAttribute('height', '20');
-      svg.setAttribute('viewBox', '0 0 24 24');
-      svg.setAttribute('fill', 'currentColor');
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute('d', 'M5.653 3.123l15.911 8.132a1.146 1.146 0 01.015 2.049l-5.451 2.73-2.73 5.451a1.146 1.146 0 01-2.049-.015L3.123 5.653a1.146 1.146 0 011.53-1.53z');
-      svg.appendChild(path);
-
-      const label = document.createElement('div');
-      label.className = 'swf-cursor-label';
-      label.textContent = this.participants.get(userId) || 'Friend';
-
-      cursor.appendChild(svg);
-      cursor.appendChild(label);
-
+      cursor.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M5.653 3.123l15.911 8.132a1.146 1.146 0 01.015 2.049l-5.451 2.73-2.73 5.451a1.146 1.146 0 01-2.049-.015L3.123 5.653a1.146 1.146 0 011.53-1.53z"/>
+        </svg>
+        <div class="swf-cursor-label">${this.participants.get(userId) || 'Friend'}</div>
+      `;
       this.cursorsContainer.appendChild(cursor);
       this.remoteCursors.set(userId, cursor);
     }
@@ -1199,19 +1144,6 @@ export class UIManager {
       
       .swf-hidden { display: none !important; }
 
-      .swf-status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          position: absolute;
-          top: 6px;
-          left: 6px;
-          border: 2px solid white;
-          z-index: 10;
-      }
-      .swf-status-dot.swf-online { background: #10b981; }
-      .swf-status-dot.swf-offline { background: #9ca3af; }
-
       .swf-remote-cursor {
         position: absolute;
         top: 0;
@@ -1401,20 +1333,6 @@ export class UIManager {
       }
       .swf-chat-self .swf-chat-text { background: #7c3aed; color: white; }
 
-      .swf-chat-system {
-          align-self: center;
-          max-width: 90%;
-      }
-      .swf-chat-system .swf-chat-sender { display: none; }
-      .swf-chat-system .swf-chat-text {
-          background: transparent;
-          color: #9ca3af;
-          font-style: italic;
-          font-size: 11px;
-          text-align: center;
-          padding: 4px;
-      }
-
       .swf-chat-input-container {
         padding: 12px;
         border-top: 1px solid #e5e7eb;
@@ -1549,29 +1467,6 @@ export class UIManager {
       @keyframes swf-toast-out {
           from { transform: translateX(0); opacity: 1; }
           to { transform: translateX(100%); opacity: 0; }
-      }
-
-      /* --- MOBILE RESPONSIVENESS --- */
-      @media (max-width: 600px) {
-          .swf-chat-container, .swf-cart-container {
-              width: calc(100vw - 32px);
-              right: 16px;
-              left: 16px;
-              bottom: 100px;
-              height: 50vh;
-          }
-          .swf-video-container {
-              width: 140px;
-              bottom: 90px;
-          }
-          .swf-toast-container {
-              left: 16px;
-              right: 16px;
-              top: 16px;
-          }
-          .swf-floating-reaction {
-              font-size: 24px;
-          }
       }
 
       /* --- REACTIONS --- */
