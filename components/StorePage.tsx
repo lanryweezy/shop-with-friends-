@@ -71,12 +71,20 @@ const StorePage: React.FC<StorePageProps> = ({
     }
   }, [isOrdersOpen]);
 
+  const lastScrollTime = useRef(0);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (isProgrammaticScroll.current) {
       isProgrammaticScroll.current = false;
       return;
     }
-    onScroll?.(e.currentTarget.scrollTop);
+
+    // Throttle scroll events to ~20fps (50ms) to avoid network/render flooding
+    const now = Date.now();
+    if (now - lastScrollTime.current > 50) {
+      lastScrollTime.current = now;
+      onScroll?.(e.currentTarget.scrollTop);
+    }
   };
 
   const handleCheckout = async () => {
@@ -282,11 +290,7 @@ const StorePage: React.FC<StorePageProps> = ({
           className="group bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all duration-300"
         >
           <div className="aspect-[4/5] overflow-hidden bg-gray-100 relative">
-            <img 
-              src={product.image} 
-              alt={product.name} 
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
+            <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
             <button 
               onClick={(e) => {
                 e.stopPropagation();
