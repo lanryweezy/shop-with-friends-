@@ -1,0 +1,3 @@
+## 2023-10-24 - Split-Brain Architecture Bottleneck
+**Learning:** In the simulated "Split Brain" architecture used in the demo, both User A and User B's state live in the same browser window and communicate via a local broadcast channel. Unthrottled DOM `onScroll` events cause an excessive amount of synchronous React state updates across both simulated devices, heavily blocking the main thread during scrolling.
+**Action:** Always implement robust debouncing or throttling (e.g. limit to ~20-30fps) for high-frequency events (like scroll or mouse movement) that cross the network boundary or, in this case, the simulated broadcast channel bridging top-level React states.

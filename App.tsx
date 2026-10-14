@@ -481,11 +481,7 @@ const App = () => {
             <div className="relative group">
               <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/20 to-blue-600/20 rounded-[2rem] opacity-30 blur-2xl group-hover:opacity-60 transition-all duration-700"></div>
               <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl transform transition-all duration-700 group-hover:scale-[1.02]">
-                <img
-                  src="/images/shopping-friends.png"
-                  alt="Friends shopping together"
-                  className="w-full object-cover"
-                />
+                <img src="/images/shopping-friends.png" alt="Friends shopping together" className="w-full object-cover" loading="lazy" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                 <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/10 backdrop-blur-md rounded-xl border border-white/10">
                   <div className="flex items-center justify-between">
@@ -516,11 +512,7 @@ const App = () => {
             <div className="bg-[#111] border border-white/10 rounded-3xl overflow-hidden hover:border-purple-500/30 transition-all duration-500 group">
               <div className="h-48 overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111] to-transparent z-10"></div>
-                <img
-                  src="/images/metric-conversion.png"
-                  alt="Friends shopping on video call"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
+                <img src="/images/metric-conversion.png" alt="Friends shopping on video call" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
               </div>
               <div className="p-6 md:p-8 -mt-12 relative z-20">
                 <div className="text-3xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
@@ -540,11 +532,7 @@ const App = () => {
             <div className="bg-[#111] border border-white/10 rounded-3xl overflow-hidden hover:border-pink-500/30 transition-all duration-500 group">
               <div className="h-48 overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111] to-transparent z-10"></div>
-                <img
-                  src="/images/metric-cart.png"
-                  alt="Luxury shopping cart"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
+                <img src="/images/metric-cart.png" alt="Luxury shopping cart" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
               </div>
               <div className="p-6 md:p-8 -mt-12 relative z-20">
                 <div className="text-3xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent mb-2">
@@ -561,11 +549,7 @@ const App = () => {
             <div className="bg-[#111] border border-white/10 rounded-3xl overflow-hidden hover:border-emerald-500/30 transition-all duration-500 group">
               <div className="h-48 overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111] to-transparent z-10"></div>
-                <img
-                  src="/images/metric-loyalty.png"
-                  alt="Queue outside store"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
+                <img src="/images/metric-loyalty.png" alt="Queue outside store" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
               </div>
               <div className="p-6 md:p-8 -mt-12 relative z-20">
                 <div className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent mb-2">
@@ -642,11 +626,7 @@ const App = () => {
       <section className="py-16 md:py-20 px-4 md:px-6 bg-white/5 border-y border-white/10 relative overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
-          <img
-            src="/images/install-social.png"
-            className="w-full h-full object-cover opacity-20"
-            alt="Social shopping integration"
-          />
+          <img src="/images/install-social.png" className="w-full h-full object-cover opacity-20" alt="Social shopping integration" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/90 via-[#0a0a0a]/80 to-[#0a0a0a]/90"></div>
         </div>
         <div className="max-w-6xl mx-auto relative z-10">
