@@ -79,6 +79,7 @@ const CoShopWidget: React.FC<CoShopWidgetProps> = ({
       <div className="absolute bottom-8 right-6 z-50">
         <button
           onClick={onConnect}
+          aria-label="Connect to shop together"
           className="group relative flex items-center justify-center w-16 h-16 rounded-full cursor-pointer transition-transform duration-500 hover:scale-110 active:scale-95"
         >
           {/* Organic Pulse Aura */}
@@ -113,7 +114,7 @@ const CoShopWidget: React.FC<CoShopWidgetProps> = ({
                 <h3 className="text-white font-medium text-base tracking-tight">Summon a friend</h3>
                 <p className="text-gray-400 text-xs mt-0.5">Share the link to start syncing.</p>
               </div>
-              <button onClick={onDisconnect} className="text-gray-500 hover:text-white transition-colors bg-white/5 p-1.5 rounded-full">
+              <button onClick={onDisconnect} aria-label="Cancel invitation" className="text-gray-500 hover:text-white transition-colors bg-white/5 p-1.5 rounded-full">
                 <X size={16} />
               </button>
             </div>
@@ -183,12 +184,12 @@ const CoShopWidget: React.FC<CoShopWidgetProps> = ({
           
           {/* Reactions - The "Digital Reflexes" */}
           <div className="flex items-center gap-1 shrink-0">
-            <button onClick={() => onReaction('heart')} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">❤️</button>
-            <button onClick={() => onReaction('laugh')} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">😂</button>
-            <button onClick={() => onReaction('fire')} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">🔥</button>
-            <button onClick={() => onReaction('shock')} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">😱</button>
-            <button onClick={() => onReaction('cash')} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">💸</button>
-            <button onClick={() => onReaction('trash')} className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">🗑️</button>
+            <button onClick={() => onReaction('heart')} aria-label="Send heart reaction" className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">❤️</button>
+            <button onClick={() => onReaction('laugh')} aria-label="Send laugh reaction" className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">😂</button>
+            <button onClick={() => onReaction('fire')} aria-label="Send fire reaction" className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">🔥</button>
+            <button onClick={() => onReaction('shock')} aria-label="Send shock reaction" className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">😱</button>
+            <button onClick={() => onReaction('cash')} aria-label="Send cash reaction" className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">💸</button>
+            <button onClick={() => onReaction('trash')} aria-label="Send trash reaction" className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-lg hover:scale-110 transition-transform active:scale-90">🗑️</button>
           </div>
 
           <div className="w-[1px] h-6 bg-white/10 shrink-0"></div>
@@ -197,6 +198,7 @@ const CoShopWidget: React.FC<CoShopWidgetProps> = ({
           <div className="flex items-center gap-2 shrink-0">
             <button 
               onClick={() => setIsMuted(!isMuted)}
+              aria-label={isMuted ? "Unmute microphone" : "Mute microphone"}
               className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${isMuted ? 'bg-red-500/20 text-red-500' : 'hover:bg-white/10 text-white'}`}
             >
               {isMuted ? <MicOff size={16} /> : <Mic size={16} />}
@@ -204,6 +206,7 @@ const CoShopWidget: React.FC<CoShopWidgetProps> = ({
             
             <button 
               onClick={() => setIsVideoOff(!isVideoOff)}
+              aria-label={isVideoOff ? "Turn on camera" : "Turn off camera"}
               className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${isVideoOff ? 'bg-red-500/20 text-red-500' : 'hover:bg-white/10 text-white'}`}
             >
               {isVideoOff ? <VideoOff size={16} /> : <Video size={16} />}
@@ -211,6 +214,7 @@ const CoShopWidget: React.FC<CoShopWidgetProps> = ({
 
             <button 
               onClick={onDisconnect}
+              aria-label="End call"
               className="w-9 h-9 rounded-full bg-red-600 flex items-center justify-center text-white hover:bg-red-700 transition-colors shadow-lg ml-1"
             >
               <PhoneOff size={16} />
