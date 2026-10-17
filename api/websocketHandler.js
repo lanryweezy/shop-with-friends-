@@ -3,8 +3,6 @@
  */
 import { isValidApiKey } from './auth.js';
 
-const VALID_API_KEYS = new Set(process.env.API_KEYS?.split(',') || ['demo-key-123']);
-
 export class WebSocketHandler {
     constructor(sessionManager) {
         this.sessionManager = sessionManager;
@@ -98,7 +96,7 @@ export class WebSocketHandler {
         const { metadata, apiKey } = payload || {};
 
         // Validate API Key
-        if (!apiKey || !VALID_API_KEYS.has(apiKey)) {
+        if (!isValidApiKey(apiKey)) {
             this.send(ws, {
                 type: 'ERROR',
                 payload: { message: 'Invalid API Key' }
