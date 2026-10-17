@@ -1,0 +1,4 @@
+## 2025-02-28 - Removed hardcoded API key and centralized validation
+**Vulnerability:** A hardcoded API key ('demo-key-123') was used as a fallback for authentication across multiple files, allowing unauthorized bypass if `API_KEYS` env variable was missing. Duplicate validation logic across `api/auth.js`, `api/server.js`, and `api/websocketHandler.js` also violated DRY and posed a maintenance risk.
+**Learning:** Hardcoding secrets as fallbacks, even for 'demo' purposes, creates severe security risks in production. Centralized validation allows managing special mass-adoption keys (e.g., `trial_` prefixes) securely without scattering hardcoded keys.
+**Prevention:** Avoid defining default secrets in code. If environment variables for secrets are missing, either fail fast (preferable) or default to an empty configuration. Centralize all authentication logic to ensure consistency.

@@ -2,7 +2,8 @@
  * Authentication and API Key utilities
  */
 
-const VALID_API_KEYS = new Set(process.env.API_KEYS?.split(',') || ['demo-key-123']);
+// Sentinel: Removed hardcoded 'demo-key-123' secret.
+const VALID_API_KEYS = new Set(process.env.API_KEYS ? process.env.API_KEYS.split(',') : []);
 
 /**
  * Validate an API key
@@ -10,7 +11,9 @@ const VALID_API_KEYS = new Set(process.env.API_KEYS?.split(',') || ['demo-key-12
  * @returns {boolean}
  */
 export function isValidApiKey(apiKey) {
-    return apiKey && VALID_API_KEYS.has(apiKey);
+    if (!apiKey || typeof apiKey !== 'string') return false;
+
+    return VALID_API_KEYS.has(apiKey);
 }
 
 /**
