@@ -118,12 +118,14 @@ const StorePage: React.FC<StorePageProps> = ({
       <div className="flex items-center gap-2">
         <button 
           onClick={() => setIsOrdersOpen(true)}
+          aria-label="View Orders"
           className="p-2 hover:bg-gray-100 rounded-full text-gray-700 transition-colors"
         >
           <User size={20} />
         </button>
         <button 
           onClick={() => setIsCartOpen(true)}
+          aria-label="Open Cart"
           className="p-2 hover:bg-gray-100 rounded-full relative text-gray-700 transition-colors"
         >
           <ShoppingCart size={20} />
@@ -150,7 +152,7 @@ const StorePage: React.FC<StorePageProps> = ({
           <h2 className="font-bold text-lg flex items-center gap-2">
             Order History
           </h2>
-          <button onClick={() => setIsOrdersOpen(false)} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
+          <button onClick={() => setIsOrdersOpen(false)} aria-label="Close Orders" className="p-1 hover:bg-gray-200 rounded-full transition-colors">
             <X size={20} className="text-gray-500" />
           </button>
         </div>
@@ -215,7 +217,7 @@ const StorePage: React.FC<StorePageProps> = ({
           <h2 className="font-bold text-lg flex items-center gap-2">
             Your Cart <span className="bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">{cart.length}</span>
           </h2>
-          <button onClick={() => setIsCartOpen(false)} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
+          <button onClick={() => setIsCartOpen(false)} aria-label="Close Cart" className="p-1 hover:bg-gray-200 rounded-full transition-colors">
             <X size={20} className="text-gray-500" />
           </button>
         </div>
@@ -247,6 +249,7 @@ const StorePage: React.FC<StorePageProps> = ({
                 </div>
                 <button 
                   onClick={() => onRemoveFromCart(idx)}
+                  aria-label="Remove item from cart"
                   className="text-gray-400 hover:text-red-500 p-1 self-center transition-colors"
                 >
                   <Trash2 size={16} />
@@ -319,6 +322,7 @@ const StorePage: React.FC<StorePageProps> = ({
         <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-white/80 backdrop-blur-md">
           <button 
             onClick={() => onNavigate(ViewState.LIST)}
+            aria-label="Back to products list"
             className="p-2 hover:bg-gray-100 rounded-full text-gray-800 transition-colors"
           >
             <ArrowLeft size={20} />
@@ -327,6 +331,7 @@ const StorePage: React.FC<StorePageProps> = ({
           <div className="flex items-center gap-2">
              <button 
               onClick={() => setIsOrdersOpen(true)}
+              aria-label="View Orders"
               className="p-2 hover:bg-gray-100 rounded-full text-gray-700 transition-colors"
             >
               <User size={20} />
