@@ -1,0 +1,3 @@
+## 2023-11-11 - Icon-Only Button Pattern
+**Learning:** The app components, specifically `StorePage`, heavily utilize icon-only buttons (like `User`, `ShoppingCart`, `X`, `Trash2`, `Plus`, `ArrowLeft`) for navigation and interactions. Unfortunately, these lacked `aria-label` attributes, rendering them completely inaccessible to screen reader users who would only hear "button" without context.
+**Action:** Implemented `aria-label`s on these buttons. Moving forward, ensure all new icon-only buttons use explicit `aria-label`s describing their action context (e.g., "Remove item from cart" rather than just "Remove").
